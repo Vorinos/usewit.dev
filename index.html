@@ -36,6 +36,8 @@ h1{margin:0;font-size:28px;line-height:1.25;font-weight:500;letter-spacing:-.025
 .btns{margin-top:26px;display:flex;flex-wrap:wrap;justify-content:center;gap:10px}
 .btn{position:relative;z-index:1;display:inline-flex;align-items:center;gap:8px;height:40px;padding:0 18px;border-radius:999px;font-size:14px;font-weight:500;text-decoration:none;background:#010008;color:#dfd8e6;transition:background .15s ease,color .15s ease}
 .btn:hover{background:#0a0812;color:#fff}
+.btn.primary{background:#fff;color:#0a0a0a}
+.btn.primary:hover{background:#ececec;color:#0a0a0a}
 /* the glow: light running round each button's edge, in four layers (wide and soft under the button, near and sharp over
    its edge), screened over what is behind. The light itself is the film in assets/light-map.png */
 .glow{position:relative;display:inline-flex;border-radius:999px}
@@ -75,7 +77,7 @@ a:focus-visible{outline:2px solid #fff;outline-offset:3px}
 <main>
 <h1 class="rise">A second brain for your notes and AI chats</h1>
 <div class="btns rise d1" style="gap:14px">
-<span class="glow" data-glow="pill" data-strength="1" data-offset="0"><canvas class="lo" aria-hidden="true"></canvas><canvas class="lo" aria-hidden="true"></canvas><a class="btn" href="https://github.com/Vorinos/Wit/releases">
+<span class="glow" data-glow="pill" data-strength="1" data-offset="0"><canvas class="lo" aria-hidden="true"></canvas><canvas class="lo" aria-hidden="true"></canvas><a class="btn primary" href="https://github.com/Vorinos/Wit/releases">
 <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 4v11"/><path d="m6.5 10 5.5 5.5 5.5-5.5"/><path d="M5 20h14"/></svg>
 Download for Mac
 </a><canvas class="hi" aria-hidden="true"></canvas><canvas class="hi" aria-hidden="true"></canvas></span>
@@ -247,7 +249,7 @@ Open in browser
   var items = [].slice.call(document.querySelectorAll('[data-glow]'));
   if (!items.length) return;
   var reduce = !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches);
-  var N = 240, CYCLE = 5;
+  var N = 240, CYCLE = 10;                                                  // one turn of the light, in seconds (the film's own pace is 5)
   var LAYERS = [{ blur: 11, alpha: 0.93, rise: 2 }, { blur: 4.5, alpha: 0.91, rise: 0 }, { blur: 1, alpha: 0.98, rise: 0 }, { blur: 0, alpha: 0.29, rise: 0 }];
   var SHAPES = { pill: { m: 40, scale: 1, core: 2.2 }, mark: { m: 30, scale: 0.7, core: 1.3 } };
 
