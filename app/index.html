@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Wit</title>
-<link rel="icon" href="/favicon.svg" type="image/svg+xml"><link rel="apple-touch-icon" href="/assets/apple-touch-icon.png"><meta name="theme-color" content="#000000">
+<link rel="icon" href="/favicon.svg" type="image/svg+xml"><link rel="apple-touch-icon" href="/assets/apple-touch-icon.png"><meta name="theme-color" content="#000000"><script>if(location.hash==='#brain')try{history.replaceState(null,'',location.pathname+location.search)}catch(e){}</script>
 <meta name="description" content="Wit reads your notes and AI chats on your own computer, files them, links them, and draws the whole record as points you can turn, sort and question.">
 <style>
 /* Wit. Flat, dark, quiet chrome around a black sheet of points. No glow, no grain, no lit edges. */
@@ -5127,7 +5127,7 @@ const Backdrop = (function () {
 /* in the desktop app on macOS the window itself is see-through and the system blurs the desktop behind it, so the page draws no backdrop of its own */
 const VIB = /[?&]vibrancy/.test(location.search); if (VIB) { document.documentElement.style.background = 'transparent'; document.body.classList.add('vib'); document.body.dataset.glass = (location.search.match(/[?&]glass=(clear|frosted|solid)/) || [])[1] || 'clear'; document.body.prepend(h('div', { id: 'dragbar', 'aria-hidden': 'true' })); }
 applyLook(curLook()); applyIcons(curIcons()); sideInit(); exploreBoot();
-const DESKTOP = location.protocol === 'file:' && !/[?&]site/.test(location.search);
+const DESKTOP = (location.protocol === 'file:' && !/[?&]site/.test(location.search)) || /^\/app(\/|\/index\.html)?$/.test(location.pathname);
 function enterApp() { st.app = true; document.body.classList.add('app'); window.scrollTo(0, 0); requestAnimationFrame(() => { sizeCanvas(); refit(false); drawTimeline(); }); if (!DESKTOP && location.hash !== '#brain') try { history.replaceState(null, '', '#brain'); } catch (e) { /* a sandboxed frame may refuse; the page works without the hash */ } }
 function leaveApp() { if (DESKTOP) return; st.app = false; document.body.classList.remove('app'); Backdrop.set(true); requestAnimationFrame(() => { sizeCanvas(); refit(false); drawTimeline(); }); if (location.hash === '#brain') try { history.replaceState(null, '', location.pathname + location.search); } catch (e) { /* as above */ } }
 function openBrain(quiet) { if (st.open) return; st.open = true; document.body.classList.add('open'); lastTouch = perf(); if (!quiet) play(0.02, 2.4); }
