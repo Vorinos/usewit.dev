@@ -30,15 +30,18 @@ a{color:#fff}
 #art{width:100%;height:100%;display:block;animation:fade 2s ease both}
 .veil{background:radial-gradient(ellipse 400px 165px at 50% calc(50% - 22px),rgba(4,4,5,.62) 0%,rgba(4,4,5,0) 100%),linear-gradient(180deg,rgba(4,4,5,0) 78%,rgba(4,4,5,.7) 100%)}
 .grain{background-image:url(/assets/grain.png);background-size:200px 200px;opacity:.035}
-.home{position:absolute;z-index:2;top:20px;left:50%;transform:translateX(-50%);display:flex;color:#fff;opacity:.94}
+.home{position:absolute;z-index:2;top:22px;left:50%;transform:translateX(-50%);display:flex;color:#fff}
 main{position:relative;z-index:1;flex:1;width:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:96px 24px 150px;text-align:center}
 h1{margin:0;font-size:28px;line-height:1.25;font-weight:500;letter-spacing:-.025em;text-wrap:balance;background:linear-gradient(90deg,#fff 0%,#fff 48%,rgba(255,255,255,.52) 100%);-webkit-background-clip:text;background-clip:text;color:transparent;-webkit-text-fill-color:transparent}
 .btns{margin-top:26px;display:flex;flex-wrap:wrap;justify-content:center;gap:10px}
-.btn{display:inline-flex;align-items:center;gap:8px;height:38px;padding:0 17px;border-radius:999px;font-size:14px;font-weight:500;text-decoration:none;transition:background .15s ease,border-color .15s ease}
-.btn.solid{background:#fff;color:#0a0a0a}
-.btn.solid:hover{background:#e9e9e9}
-.btn.ghost{border:1px solid rgba(255,255,255,.22);background:rgba(8,8,10,.6);color:#fff}
-.btn.ghost:hover{background:rgba(255,255,255,.09);border-color:rgba(255,255,255,.34)}
+.btn{position:relative;z-index:1;display:inline-flex;align-items:center;gap:8px;height:40px;padding:0 18px;border-radius:999px;font-size:14px;font-weight:500;text-decoration:none;background:#010008;color:#dfd8e6;transition:background .15s ease,color .15s ease}
+.btn:hover{background:#0a0812;color:#fff}
+/* the glow: light running round each button's edge, in four layers (wide and soft under the button, near and sharp over
+   its edge), screened over what is behind. The light itself is the film in assets/light-map.png */
+.glow{position:relative;display:inline-flex;border-radius:999px}
+[data-glow] canvas{position:absolute;pointer-events:none;mix-blend-mode:screen}
+[data-glow] canvas.lo{z-index:0}[data-glow] canvas.hi{z-index:2}
+.home svg{position:relative;z-index:1}
 .note{margin:14px 0 0;max-width:420px;font-size:12.5px;line-height:1.5;color:rgba(255,255,255,.58);text-wrap:balance}
 .apps{list-style:none;margin:30px 0 0;padding:0;display:flex;flex-wrap:wrap;justify-content:center;align-items:center;gap:16px}
 .apps li{display:flex}
@@ -63,25 +66,27 @@ a:focus-visible{outline:2px solid #fff;outline-offset:3px}
 <div class="layer veil" aria-hidden="true"></div>
 <div class="layer grain" aria-hidden="true"></div>
 
-<a href="/" class="home" aria-label="Wit">
-<svg width="24" height="24" viewBox="-310 -310 620 620" fill="currentColor" aria-hidden="true"><path d="M-48.82 -156.63A80 80 0 1 1 48.82 -156.63L39.15 -149.17A44 44 0 1 0 109.61 -108.49L111.23 -120.60A80 80 0 1 1 160.05 -36.03L148.76 -40.68A44 44 0 1 0 148.76 40.68L160.05 36.03A80 80 0 1 1 111.23 120.60L109.61 108.49A44 44 0 1 0 39.15 149.17L48.82 156.63A80 80 0 1 1 -48.82 156.63L-39.15 149.17A44 44 0 1 0 -109.61 108.49L-111.23 120.60A80 80 0 1 1 -160.05 36.03L-148.76 40.68A44 44 0 1 0 -148.76 -40.68L-160.05 -36.03A80 80 0 1 1 -111.23 -120.60L-109.61 -108.49A44 44 0 1 0 -39.15 -149.17L-48.82 -156.63Z"/></svg>
+<a href="/" class="home" aria-label="Wit" data-glow="mark" data-strength="1" data-offset="0.55">
+<canvas class="lo" aria-hidden="true"></canvas><canvas class="lo" aria-hidden="true"></canvas>
+<svg width="28" height="28" viewBox="-310 -310 620 620" fill="currentColor" aria-hidden="true"><path d="M-48.82 -156.63A80 80 0 1 1 48.82 -156.63L39.15 -149.17A44 44 0 1 0 109.61 -108.49L111.23 -120.60A80 80 0 1 1 160.05 -36.03L148.76 -40.68A44 44 0 1 0 148.76 40.68L160.05 36.03A80 80 0 1 1 111.23 120.60L109.61 108.49A44 44 0 1 0 39.15 149.17L48.82 156.63A80 80 0 1 1 -48.82 156.63L-39.15 149.17A44 44 0 1 0 -109.61 108.49L-111.23 120.60A80 80 0 1 1 -160.05 36.03L-148.76 40.68A44 44 0 1 0 -148.76 -40.68L-160.05 -36.03A80 80 0 1 1 -111.23 -120.60L-109.61 -108.49A44 44 0 1 0 -39.15 -149.17L-48.82 -156.63Z"/></svg>
+<canvas class="hi" aria-hidden="true"></canvas><canvas class="hi" aria-hidden="true"></canvas>
 </a>
 
 <main>
 <h1 class="rise">A second brain for your notes and AI chats</h1>
-<div class="btns rise d1">
-<a class="btn solid" href="https://github.com/Vorinos/Wit/releases">
+<div class="btns rise d1" style="gap:14px">
+<span class="glow" data-glow="pill" data-strength="1" data-offset="0"><canvas class="lo" aria-hidden="true"></canvas><canvas class="lo" aria-hidden="true"></canvas><a class="btn" href="https://github.com/Vorinos/Wit/releases">
 <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 4v11"/><path d="m6.5 10 5.5 5.5 5.5-5.5"/><path d="M5 20h14"/></svg>
 Download for Mac
-</a>
-<a class="btn ghost" href="https://github.com/Vorinos/Wit">
+</a><canvas class="hi" aria-hidden="true"></canvas><canvas class="hi" aria-hidden="true"></canvas></span>
+<span class="glow" data-glow="pill" data-strength="0.62" data-offset="0.37"><canvas class="lo" aria-hidden="true"></canvas><canvas class="lo" aria-hidden="true"></canvas><a class="btn" href="https://github.com/Vorinos/Wit">
 <svg width="14" height="14" viewBox="0 0 24 24" fill="#F5B83D" aria-hidden="true"><path d="M12 2.5l2.9 6.1 6.6.8-4.9 4.6 1.3 6.6L12 17.3l-5.9 3.3 1.3-6.6-4.9-4.6 6.6-.8z"/></svg>
 Star on GitHub
-</a>
-<a class="btn ghost" href="/app/#brain">
+</a><canvas class="hi" aria-hidden="true"></canvas><canvas class="hi" aria-hidden="true"></canvas></span>
+<span class="glow" data-glow="pill" data-strength="0.62" data-offset="0.71"><canvas class="lo" aria-hidden="true"></canvas><canvas class="lo" aria-hidden="true"></canvas><a class="btn" href="/app/">
 Open in browser
 <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 17 17 7"/><path d="M8 7h9v9"/></svg>
-</a>
+</a><canvas class="hi" aria-hidden="true"></canvas><canvas class="hi" aria-hidden="true"></canvas></span>
 </div>
 <p class="note rise d2">Best on the desktop app. The browser version works too, without connected apps.</p>
 <ul class="apps rise d3" aria-label="Works with">
@@ -99,7 +104,7 @@ Open in browser
 <a href="https://github.com/Vorinos/Wit/releases"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 4v11"/><path d="m6.5 10 5.5 5.5 5.5-5.5"/><path d="M5 20h14"/></svg>Intel</a>
 <a href="https://github.com/Vorinos/Wit/releases"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 4v11"/><path d="m6.5 10 5.5 5.5 5.5-5.5"/><path d="M5 20h14"/></svg>Windows</a>
 <a href="https://github.com/Vorinos/Wit/releases"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 4v11"/><path d="m6.5 10 5.5 5.5 5.5-5.5"/><path d="M5 20h14"/></svg>Linux</a>
-<a href="/app/#brain"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M3 12h18"/><path d="M12 3a14 14 0 0 1 0 18a14 14 0 0 1 0-18z"/></svg>Web</a>
+<a href="/app/"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M3 12h18"/><path d="M12 3a14 14 0 0 1 0 18a14 14 0 0 1 0-18z"/></svg>Web</a>
 </nav>
 </div>
 </div>
@@ -230,6 +235,105 @@ Open in browser
   else window.addEventListener('resize', function () { layout(); if (reduce) requestAnimationFrame(frame); });
   if (document.fonts && document.fonts.load) document.fonts.load(font(12)).then(function () { layout(); if (reduce) requestAnimationFrame(frame); }).catch(function () {});
   raf = requestAnimationFrame(frame);
+})();
+</script>
+
+<script>
+/* The glow round the buttons and the logo. The light map is a film of the light: one column per point round the ring
+   (720), one row per 1/30 s of one turn (150 rows = 5 s). Each frame reads the two rows round the light's phase, blends
+   them, and strokes the ring (a button's edge, or the outline of the mark) in short pieces of those colours. That sharp
+   ring is copied into four layers, which CSS blurs and screens over the page. */
+(function () {
+  var items = [].slice.call(document.querySelectorAll('[data-glow]'));
+  if (!items.length) return;
+  var reduce = !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches);
+  var N = 240, CYCLE = 5;
+  var LAYERS = [{ blur: 11, alpha: 0.93, rise: 2 }, { blur: 4.5, alpha: 0.91, rise: 0 }, { blur: 1, alpha: 0.98, rise: 0 }, { blur: 0, alpha: 0.29, rise: 0 }];
+  var SHAPES = { pill: { m: 40, scale: 1, core: 2.2 }, mark: { m: 30, scale: 0.7, core: 1.3 } };
+
+  function pillPoint(u, x, y, w, h, r) {
+    var a = w - 2 * r, b = h - 2 * r, q = Math.PI * r / 2, d = (((u % 1) + 1) % 1) * (2 * a + 2 * b + 4 * q), parts = [a, q, b, q, a, q, b, q];
+    for (var k = 0; k < 8; k++) {
+      if (d <= parts[k]) {
+        if (k === 0) return [x + r + d, y];
+        if (k === 2) return [x + w, y + r + d];
+        if (k === 4) return [x + w - r - d, y + h];
+        if (k === 6) return [x, y + h - r - d];
+        var j = (k - 1) / 2, cx = j < 2 ? x + w - r : x + r, cy = j === 0 || j === 3 ? y + r : y + h - r, ang = -Math.PI / 2 + j * Math.PI / 2 + d / r;
+        return [cx + r * Math.cos(ang), cy + r * Math.sin(ang)];
+      }
+      d -= parts[k];
+    }
+    return [x + r, y];
+  }
+
+  var rings = items.map(function (el) {
+    var shape = SHAPES[el.getAttribute('data-glow')] || SHAPES.pill, strength = parseFloat(el.getAttribute('data-strength') || '1');
+    var cvs = [].slice.call(el.querySelectorAll(':scope > canvas')), target = shape === SHAPES.mark ? el.querySelector('svg') : el.querySelector('.btn');
+    cvs.forEach(function (c, k) {
+      var L = LAYERS[k], bl = L.blur * shape.scale;
+      c.style.filter = bl ? 'blur(' + bl + 'px)' : 'none';
+      c.style.opacity = String(Math.min(1, L.alpha * strength));
+      c.style.left = (-shape.m) + 'px'; c.style.top = (-shape.m - L.rise * shape.scale) + 'px';
+    });
+    var sharp = document.createElement('canvas');
+    return { el: el, shape: shape, target: target, cvs: cvs, ctx: cvs.map(function (c) { return c.getContext('2d'); }), sharp: sharp, sg: sharp.getContext('2d'), off: parseFloat(el.getAttribute('data-offset') || '0'), ends: null, w: 0, h: 0, dpr: 1 };
+  });
+
+  function layout(R) {
+    var t = R.target; if (!t) return;
+    var w = t.getBoundingClientRect ? t.clientWidth || t.getBoundingClientRect().width : 0, h = t.clientHeight || t.getBoundingClientRect().height, M = R.shape.m, dpr = Math.min(2, window.devicePixelRatio || 1);
+    if (!w || !h) return;
+    R.w = w; R.h = h; R.dpr = dpr;
+    var W = w + 2 * M, H = h + 2 * M;
+    [R.sharp].concat(R.cvs).forEach(function (c) { c.width = Math.round(W * dpr); c.height = Math.round(H * dpr); c.style.width = W + 'px'; c.style.height = H + 'px'; });
+    var pt;
+    if (R.shape === SHAPES.mark) {
+      /* the mark's outline, measured by length along the path in the SVG, mapped from its viewBox into the layer */
+      var path = t.querySelector('path'), vb = t.viewBox.baseVal, total = path.getTotalLength(), sx = w / vb.width, sy = h / vb.height;
+      pt = function (u) { var q = path.getPointAtLength((((u % 1) + 1) % 1) * total); return [M + (q.x - vb.x) * sx, M + (q.y - vb.y) * sy]; };
+    } else {
+      var rx = M - 0.6, ry = M - 0.6, rw = w + 1.2, rh = h + 1.2;
+      pt = function (u) { return pillPoint(u, rx, ry, rw, rh, rh / 2); };
+    }
+    R.ends = [];
+    for (var i = 0; i < N; i++) R.ends.push([pt((i - 0.75) / N), pt((i + 0.75) / N)]);
+  }
+
+  function start(map) {
+    var cols = map.width, rows = map.height, d = map.data;
+    rings.forEach(layout);
+    function paint(R, phase) {
+      if (!R.ends) return;
+      var g = R.sg, M = R.shape.m, f = phase * rows, r0 = Math.floor(f) % rows, r1 = (r0 + 1) % rows, k = f - Math.floor(f);
+      g.setTransform(R.dpr, 0, 0, R.dpr, 0, 0); g.clearRect(0, 0, R.w + 2 * M, R.h + 2 * M);
+      g.lineWidth = R.shape.core; g.lineCap = 'butt';
+      for (var i = 0; i < N; i++) {
+        var col = Math.floor(i * cols / N), a = (r0 * cols + col) * 4, b = (r1 * cols + col) * 4;
+        var rr = d[a] + (d[b] - d[a]) * k, gg = d[a + 1] + (d[b + 1] - d[a + 1]) * k, bb = d[a + 2] + (d[b + 2] - d[a + 2]) * k;
+        if (rr + gg + bb < 6) continue;
+        var e = R.ends[i];
+        g.strokeStyle = 'rgb(' + rr.toFixed(1) + ',' + gg.toFixed(1) + ',' + bb.toFixed(1) + ')';
+        g.beginPath(); g.moveTo(e[0][0], e[0][1]); g.lineTo(e[1][0], e[1][1]); g.stroke();
+      }
+      for (var j = 0; j < R.ctx.length; j++) { var c = R.ctx[j]; c.setTransform(1, 0, 0, 1, 0, 0); c.clearRect(0, 0, c.canvas.width, c.canvas.height); c.drawImage(R.sharp, 0, 0); }
+    }
+    function render(t) { for (var i = 0; i < rings.length; i++) { var p = (t / CYCLE + rings[i].off) % 1; paint(rings[i], p < 0 ? p + 1 : p); } }
+    if (window.ResizeObserver) { var ro = new ResizeObserver(function () { rings.forEach(layout); if (reduce) render(1.2); }); rings.forEach(function (R) { if (R.target) ro.observe(R.target); }); }
+    else window.addEventListener('resize', function () { rings.forEach(layout); });
+    if (reduce) { render(1.2); return; }
+    var t0 = performance.now();
+    (function tick(now) { if (!document.hidden) render((now - t0) / 1000); requestAnimationFrame(tick); })(t0);
+  }
+
+  var img = new Image();
+  img.onload = function () {
+    var c = document.createElement('canvas'); c.width = img.naturalWidth; c.height = img.naturalHeight;
+    var g = c.getContext('2d'); g.drawImage(img, 0, 0);
+    var data; try { data = g.getImageData(0, 0, c.width, c.height).data; } catch (e) { return; }
+    start({ width: c.width, height: c.height, data: data });
+  };
+  img.src = '/assets/light-map.png';
 })();
 </script>
 </body>
