@@ -34,16 +34,10 @@ svg{display:block}
 
 /* ---------- loading ---------- */
 @property --r{syntax:'<length>';inherits:false;initial-value:0px}
-#boot{position:fixed;inset:0;z-index:200;display:grid;place-items:center;background:#000;--r:0px;-webkit-mask:radial-gradient(circle at 50% 50%,transparent calc(var(--r) - 1.5px),#000 var(--r));mask:radial-gradient(circle at 50% 50%,transparent calc(var(--r) - 1.5px),#000 var(--r));transition:--r .8s cubic-bezier(.76,0,.2,1)}
-.bootmark{transition:transform .45s cubic-bezier(.6,0,.4,1),opacity .3s}
-.bootmark .spin{position:relative;width:88px;height:88px;animation:bootTurn 1s cubic-bezier(.25,.9,.25,1) both;will-change:transform}
-.bootmark i{position:absolute;left:50%;top:50%;width:22.7px;height:22.7px;margin:-11.35px 0 0 -11.35px;border-radius:50%;background:#fff;transform:scale(.15);animation:bootLobe .6s cubic-bezier(.2,1.3,.35,1) both;animation-delay:calc(var(--i)*40ms + 80ms);will-change:transform}
-.bootmark .whole{position:absolute;inset:0;width:100%;height:100%;color:#fff;opacity:0;animation:bootWhole .25s ease .62s both;will-change:opacity}
-@keyframes bootLobe{to{transform:translate(var(--x),var(--y)) scale(1)}}
-@keyframes bootWhole{to{opacity:1}}
-@keyframes bootTurn{from{transform:rotate(-150deg) scale(.6)}to{transform:rotate(0) scale(1)}}
-body.booted #boot{--r:150vmax;pointer-events:none}
-body.booted .bootmark{transform:scale(.4);opacity:0}
+#boot{position:fixed;inset:0;z-index:200;background:#000}
+#boot.drawn{background:transparent}
+body.booted #boot{pointer-events:none}
+#bootfx{position:absolute;inset:0;width:100%;height:100%;display:block}
 
 /* ---------- pills, fields ---------- */
 .pill{height:34px;padding:0 14px;border-radius:999px;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.13);color:var(--ink);font-weight:500;font-size:13.5px;display:inline-flex;align-items:center;gap:8px;white-space:nowrap;transition:background .12s,border-color .12s,transform .12s}
@@ -823,10 +817,38 @@ body.vib.jv[data-glass="frosted"]:not([data-theme="original"]) #view::before{opa
 @media (max-width:1320px){ #hiBar,#tourChip{bottom:calc(var(--ib) + 52px);max-width:calc(100% - var(--il) - var(--ir) - 40px)} }
 @media (max-width:820px){ #zoomPct{display:none} #tourBtn span{display:none} #hiBar span{display:none} }
 @media (prefers-reduced-motion:reduce){ .palbox{animation:none} }
+
+/* the globe of spaces in the sidebar */
+#stars{height:184px;outline:0}
+#stars:focus,#stars:focus-visible{outline:0;box-shadow:none}
+@media (max-height:780px){#stars{height:160px}}
+@media (max-height:690px){#stars{height:132px}}
 </style>
 </head>
 <body>
-<div id="boot" aria-hidden="true"><div class="bootmark"><div class="spin"><i style="--i:0;--x:0px;--y:-31.2px"></i><i style="--i:1;--x:27.04px;--y:-15.6px"></i><i style="--i:2;--x:27.04px;--y:15.6px"></i><i style="--i:3;--x:0px;--y:31.2px"></i><i style="--i:4;--x:-27.04px;--y:15.6px"></i><i style="--i:5;--x:-27.04px;--y:-15.6px"></i><svg class="whole"><use href="#mark"/></svg></div></div></div>
+<div id="boot" aria-hidden="true"><canvas id="bootfx"></canvas></div>
+<script>
+/* the opening (see the note at the head of its code): started here, before the rest of the page is read, and drawn off this thread where it can be */
+(function () {
+  const SRC = "/* The opening. The mark draws itself in dither: its heart first, from the middle out, then its six petals one after\n   another round from the top, each growing out of the heart. A pixel of it is set once the light reaching it passes\n   that pixel's place in a 4\u00d74 Bayer order, so every part comes up through a fine screen of pixels and settles solid. When Wit is ready the mark falls back into the screen, and the black opens from the middle as a\n   dithered iris, a fine edge of light running out ahead of it, until the last pixels in the corners go out.\n   It is drawn off the page's own thread where it can be (a worker with an offscreen canvas), so the record being read\n   and laid out does not make it stutter. `post` and `raf` are given to it; it returns { msg }. */\nconst api = (() => {\n  const BY = [0, 8, 2, 10, 12, 4, 14, 6, 3, 11, 1, 9, 15, 7, 13, 5].map(b => (b + 0.5) / 16);\n  const ease = u => u < 0.5 ? 4 * u * u * u : 1 - Math.pow(-2 * u + 2, 3) / 2, out = u => 1 - Math.pow(1 - u, 3), clamp = (v, a, b) => v < a ? a : v > b ? b : v;\n  const mk = (w, h) => typeof OffscreenCanvas !== 'undefined' ? new OffscreenCanvas(w, h) : Object.assign(document.createElement('canvas'), { width: w, height: h });\n  const BLACK = 0xff000000, WHITE = 0xffffffff, EDGE = 0x47ffffff;          // the edge of the iris: white at a little over a quarter\n  const DEV = 0.95, MOUT = 0.42, COVER0 = 0.06, COVER = 1.15, G = 2;          // seconds; the black is a screen of 2-pixel cells\n  let cv, x, W, H, dpr, MW, cov, ang, beg, mc, mx, md, mu, cc, cxx, cd, cu, ord, cw, ch, t0 = 0, exitAt = -1, wantExit = false, reduced = false, said = false;\n  function init(o) {\n    cv = o.canvas; W = o.w; H = o.h; dpr = o.dpr; MW = o.mw; reduced = !!o.reduced; x = cv.getContext('2d', { alpha: true });\n    /* how much of each pixel of a 1-pixel grid the mark covers */\n    const s = mk(MW, MW), sx = s.getContext('2d'); sx.translate(MW / 2, MW / 2); sx.scale(MW / 620, MW / 620); sx.fillStyle = '#fff'; sx.fill(new Path2D(o.path));\n    const d = sx.getImageData(0, 0, MW, MW).data; cov = new Float32Array(MW * MW); beg = new Float32Array(MW * MW);\n    /* when each pixel starts to come up: the heart from the middle out; a petal (a sixth of the turn, centred on its own\n       angle, so the turns between petals fall in the gaps) after the one before it, from its root outward */\n    for (let j = 0; j < MW; j++) for (let i = 0; i < MW; i++) {\n      const k = j * MW + i, dx = i + 0.5 - MW / 2, dy = j + 0.5 - MW / 2, r = Math.hypot(dx, dy) / (MW / 2); cov[k] = d[k * 4 + 3] / 255;\n      let a = Math.atan2(dx, -dy) / (Math.PI * 2); if (a < 0) a += 1; const pet = Math.floor(((a + 1 / 12) % 1) * 6);\n      beg[k] = r < 0.42 ? 0.02 + r * 0.26 : 0.14 + pet * 0.06 + (r - 0.42) * 0.3;\n    }\n    mc = mk(MW, MW); mx = mc.getContext('2d'); md = mx.createImageData(MW, MW); mu = new Uint32Array(md.data.buffer);\n    /* the black, as cells; each cell's turn to clear: mostly how far it is from the middle, a little its place in the Bayer order */\n    cw = Math.ceil(W / G); ch = Math.ceil(H / G); cc = mk(cw, ch); cxx = cc.getContext('2d'); cd = cxx.createImageData(cw, ch); cu = new Uint32Array(cd.data.buffer); ord = new Float32Array(cw * ch);\n    const R = Math.hypot(W, H) / 2;\n    for (let j = 0; j < ch; j++) for (let i = 0; i < cw; i++) { const r = Math.hypot((i + 0.5) * G - W / 2, (j + 0.5) * G - H / 2) / R; ord[j * cw + i] = r * 0.78 + BY[(j & 3) * 4 + (i & 3)] * 0.22; }\n    t0 = performance.now(); raf(frame);\n  }\n  function msg(m) { if (m.type === 'init') init(m); else if (m.type === 'exit') wantExit = true; }\n  function markAt(D, sc, devT) {                              // D: how much light the mark has (devT \u2265 0: still drawing itself in)\n    const c0 = MW / 2;\n    for (let j = 0; j < MW; j++) {\n      const sj = Math.round((j + 0.5 - c0) / sc + c0 - 0.5), br = (j & 3) * 4;\n      for (let i = 0; i < MW; i++) {\n        const si = Math.round((i + 0.5 - c0) / sc + c0 - 0.5); let v = 0;\n        if (si >= 0 && sj >= 0 && si < MW && sj < MW) { const k = sj * MW + si; v = cov[k]; if (v > 0) v *= devT >= 0 ? ease(clamp((devT - beg[k]) / 0.32, 0, 1)) : D; }\n        mu[j * MW + i] = v > BY[br + (i & 3)] ? WHITE : 0;\n      }\n    }\n    mx.putImageData(md, 0, 0); x.drawImage(mc, Math.round(W / 2 - MW / 2), Math.round(H / 2 - MW / 2), MW, MW);\n  }\n  function frame() {\n    const t = (performance.now() - t0) / 1000;\n    if (wantExit && exitAt < 0 && (t >= DEV || reduced)) exitAt = t;\n    const te = exitAt < 0 ? -1 : t - exitAt;\n    x.setTransform(dpr, 0, 0, dpr, 0, 0); x.imageSmoothingEnabled = false; x.clearRect(0, 0, W, H);\n    if (reduced) { if (te < 0) { x.fillStyle = '#000'; x.fillRect(0, 0, W, H); markAt(1, 1, -1); raf(frame); } else { x.clearRect(0, 0, W, H); post('done'); } if (!said) { said = true; post('ready'); } return; }\n    /* the black: whole until the mark has gone back into the screen, then the dithered iris */\n    if (te < COVER0) { x.fillStyle = '#000'; x.fillRect(0, 0, W, H); }\n    else {\n      const u = clamp((te - COVER0) / COVER, 0, 1), p = (1 - Math.pow(1 - u, 2.6)) * (0.35 + 0.65 * Math.min(1, u * 9)) * 1.03, n = cw * ch;\n      for (let k = 0; k < n; k++) { const o = ord[k]; cu[k] = o >= p ? BLACK : p - o < 0.028 ? EDGE : 0; }\n      cxx.putImageData(cd, 0, 0); x.drawImage(cc, 0, 0, cw * G, ch * G);\n    }\n    /* the mark: drawing itself in, held, then falling back into the screen as it draws a little inward */\n    if (te < 0) markAt(1, 1, t);\n    else if (te < MOUT) { const u = clamp(te / MOUT, 0, 1); markAt(1 - out(u), 1 - 0.07 * ease(u), -1); }\n    if (!said) { said = true; post('ready'); }\n    if (te >= COVER0 + COVER + 0.05) { x.clearRect(0, 0, W, H); post('done'); return; }\n    raf(frame);\n  }\n  return { msg };\n})();\n";
+  const box = document.getElementById('boot'), cv = document.getElementById('bootfx'); if (!box || !cv) return;
+  const W = Math.max(1, innerWidth), H = Math.max(1, innerHeight), dpr = Math.min(window.devicePixelRatio || 1, 2), reduced = typeof matchMedia === 'function' && matchMedia('(prefers-reduced-motion: reduce)').matches;
+  cv.width = Math.round(W * dpr); cv.height = Math.round(H * dpr);
+  let send = null, ended = false;
+  const end = () => { if (ended) return; ended = true; box.remove(); }, said = m => { if (m === 'ready') box.classList.add('drawn'); else if (m === 'done') end(); };
+  const opts = { type: 'init', w: W, h: H, dpr, mw: 84, path: "M-48.82 -156.63A80 80 0 1 1 48.82 -156.63L39.15 -149.17A44 44 0 1 0 109.61 -108.49L111.23 -120.60A80 80 0 1 1 160.05 -36.03L148.76 -40.68A44 44 0 1 0 148.76 40.68L160.05 36.03A80 80 0 1 1 111.23 120.60L109.61 108.49A44 44 0 1 0 39.15 149.17L48.82 156.63A80 80 0 1 1 -48.82 156.63L-39.15 149.17A44 44 0 1 0 -109.61 108.49L-111.23 120.60A80 80 0 1 1 -160.05 36.03L-148.76 40.68A44 44 0 1 0 -148.76 -40.68L-160.05 -36.03A80 80 0 1 1 -111.23 -120.60L-109.61 -108.49A44 44 0 1 0 -39.15 -149.17L-48.82 -156.63Z", reduced };
+  try {
+    if (!cv.transferControlToOffscreen || typeof Worker !== 'function' || typeof OffscreenCanvas === 'undefined') throw 0;
+    const wk = new Worker(URL.createObjectURL(new Blob(['const post = m => postMessage(m), raf = cb => requestAnimationFrame(cb);\n' + SRC + '\nonmessage = e => api.msg(e.data);'], { type: 'text/javascript' })));
+    const off = cv.transferControlToOffscreen(); wk.onmessage = e => { said(e.data); if (e.data === 'done') wk.terminate(); };
+    wk.onerror = () => end(); wk.postMessage(Object.assign({ canvas: off }, opts), [off]); send = m => wk.postMessage(m);
+  } catch (e) {
+    try { const api = new Function('post', 'raf', SRC + '\nreturn api;')(said, cb => requestAnimationFrame(cb)); api.msg(Object.assign({ canvas: cv }, opts)); send = m => api.msg(m); }
+    catch (e2) { box.classList.add('drawn'); }                // no canvas at all: the page simply shows
+  }
+  window.__bootExit = () => { if (send) send({ type: 'exit' }); setTimeout(end, 3200); };   // and if it never says it is done, it goes anyway
+})();
+</script>
 <canvas id="backdrop" aria-hidden="true"></canvas>
 <svg width="0" height="0" style="position:absolute" aria-hidden="true">
   <symbol id="mark" viewBox="-310 -310 620 620"><path fill="currentColor" d="M-48.82 -156.63A80 80 0 1 1 48.82 -156.63L39.15 -149.17A44 44 0 1 0 109.61 -108.49L111.23 -120.60A80 80 0 1 1 160.05 -36.03L148.76 -40.68A44 44 0 1 0 148.76 40.68L160.05 36.03A80 80 0 1 1 111.23 120.60L109.61 108.49A44 44 0 1 0 39.15 149.17L48.82 156.63A80 80 0 1 1 -48.82 156.63L-39.15 149.17A44 44 0 1 0 -109.61 108.49L-111.23 120.60A80 80 0 1 1 -160.05 36.03L-148.76 40.68A44 44 0 1 0 -148.76 -40.68L-160.05 -36.03A80 80 0 1 1 -111.23 -120.60L-109.61 -108.49A44 44 0 1 0 -39.15 -149.17L-48.82 -156.63Z"/></symbol>
@@ -905,7 +927,7 @@ body.vib.jv[data-glass="frosted"]:not([data-theme="original"]) #view::before{opa
       <button type="button" id="lookBtn"><span class="ni" style="--c:#3a3a3c;--cut:#3a3a3c" aria-hidden="true"><svg class="o"><use href="#n-look"/></svg><svg class="f"><use href="#n-look-f"/></svg></span>Appearance</button>
       <button type="button" id="lockBtn"><span class="ni" style="--c:#636366;--cut:#636366" aria-hidden="true"><svg class="o"><use href="#n-close"/></svg><svg class="f"><use href="#n-close-f"/></svg></span>Close the brain</button>
     </div>
-    <canvas id="stars" width="260" height="170" aria-hidden="true"></canvas>
+    <canvas id="stars" width="260" height="170" tabindex="0" role="img" aria-label="A globe of your spaces. The arrow keys step through them, Enter lights one on the sheet, and Shift with Enter goes inside it."></canvas>
     <div id="status" aria-live="polite"></div>
   </aside>
 
@@ -3289,76 +3311,367 @@ function playTick() { const f = clamp(U.range[1], 0, 1), d = S.t0 + f * (S.t1 - 
 })();
 
 /* ---------- the map of spaces in the sidebar ----------
-   One dot for each space, a line where entries in two of them are linked. It hangs in three dimensions and turns slowly.
-   Drag it to turn it yourself, scroll over it to bring it nearer, point at a dot to read it, and click a dot to keep
-   only that space lit on the sheet. */
-const Stars = { nodes: [], links: [], adj: [], yaw: 0.6, pitch: 0.28, yawT: 0.6, pitchT: 0.28, vy: 0, vp: 0, hov: -1, drag: false, grab: 0, lab: 0, labI: -1, zoom: 1, zoomT: 1, lastMove: -10, ptr: null, ink: '#fff', font: 'sans-serif' };
+   A small globe of the whole record. Every space is a patch of dots on it, a dot for an entry (a fair sample of them
+   when there are many), the oldest at the middle of the patch and the newest at its rim, with the space's own light
+   standing over the middle. A hairline runs through the globe wherever entries in two spaces are linked.
+   It shows what the sheet shows. A search, a span of dates, a highlight or a dive leaves lit only the dots that are
+   lit there, and the globe turns to where they are; choose an entry and it is drawn with what it is linked to; play
+   the record growing and every patch fills from its middle outward.
+   It holds still. It turns only when it is turned: dragged, or a space in it clicked or chosen with the keys, which
+   brings that space round to the front. Let go of it while it is moving and it glides on and comes gently to rest.
+   Nothing is redrawn while nothing is changing.
+   Drag to turn it, scroll to bring it nearer, point at a space to read it. Click a space to light it on the sheet,
+   click it twice to go inside. With the keyboard: the arrows step through the spaces, Enter lights, Shift+Enter dives.
+   There is no blur in it anywhere. The light around a space, and the air around the globe, are drawn as an ordered
+   dither: single pixels, more of them near the source, set on the screen's own grid. */
+const BAYER = [0, 8, 2, 10, 12, 4, 14, 6, 3, 11, 1, 9, 15, 7, 13, 5].map(b => (b + 0.5) / 16);
+const rgba32 = (c, a) => ((Math.round(clamp(a, 0, 1) * 255) << 24) | (Math.round(clamp(c[2], 0, 1) * 255) << 16) | (Math.round(clamp(c[1], 0, 1) * 255) << 8) | Math.round(clamp(c[0], 0, 1) * 255)) >>> 0;
+const ORB = { RC: 0.88, RN: 0.955, PZ: 0.28, MOTES: 1500, SPARKS: 420, GOLD: 2.399963 };
+const Stars = { settle: 0, trail: [], over: false, kbF: false, nodes: [], links: [], adj: [], M: 0, runs: [], yaw: 0.6, pitch: 0.3, yawT: 0.6, pitchT: 0.3, vy: 0, vp: 0, hov: -1, kb: -1, drag: false, grab: 0, zoom: 1, zoomT: 1, lastMove: -10, ptr: null,
+  ink: '#fff', font: 'sans-serif', dark: true, aim: null, rest: 0, rip: [], sparks: [], nsp: 0, filtered: false, key: '', anchor: -1, top: -1, here: 0, hereP: [0, 0, 0], hereK: -1, geo: null, prev: null, lab: 0, labI: -1, lead: 0 };
+const orbHash = (e, s) => { let x = Math.imul(e + 1, 0x9E3779B1) ^ Math.imul(s + 7, 0x85EBCA6B); x ^= x >>> 15; x = Math.imul(x, 0x2C1B3C6D); x ^= x >>> 12; x = Math.imul(x, 0x297A2D39); x ^= x >>> 15; return (x >>> 0) / 4294967296; };
+/* where an entry sits in its space's patch: f is how far through the space's dates it comes, so a patch is a sunflower
+   head that fills from the middle, every dot a little off its place so that no spiral shows */
+function orbPlace(nd, f, e, o) {
+  const cphi = Math.max(-1, 1 - (0.03 + 0.97 * f) * (1 - nd.ca) * (0.93 + 0.14 * orbHash(e, 1))), sphi = Math.sqrt(1 - cphi * cphi);
+  const th = f * nd.m * ORB.GOLD + nd.th0 + (orbHash(e, 2) - 0.5) * 0.8, ct = Math.cos(th) * sphi, sn = Math.sin(th) * sphi, c = nd.c, u = nd.u, v = nd.v;
+  o[0] = (c[0] * cphi + u[0] * ct + v[0] * sn) * ORB.RC; o[1] = (c[1] * cphi + u[1] * ct + v[1] * sn) * ORB.RC; o[2] = (c[2] * cphi + u[2] * ct + v[2] * sn) * ORB.RC; return o;
+}
 function drawStars() {                                      // rebuilt whenever the record, the theme or the colours change
   if (!S.rec) return;
-  const fd = Store.field('space'), gc = Store.fieldColours('space', theme(), cur.palette), ids = fd.vals.map((v, i) => i).sort((a, b) => fd.vals[b].pts - fd.vals[a].pts).slice(0, 18), at = new Map(), n = ids.length, top = n ? fd.vals[ids[0]].pts || 1 : 1;
-  const nn = new Int32Array(fd.vals.length), nr = new Int32Array(fd.vals.length); for (let i = 0; i < S.n; i++) { if (S.layer[i]) nr[fd.of[i]]++; else nn[fd.of[i]]++; }
-  Stars.nodes = ids.map((vi, k) => { const u = 1 - 2 * (k + 0.5) / n, a = k * 2.399963, q = Math.sqrt(1 - u * u), rr = 0.92; at.set(vi, k); return { p: [q * Math.cos(a) * rr, u * rr * 0.82, q * Math.sin(a) * rr], r: 1.9 + 3 * Math.sqrt(fd.vals[vi].pts / top), label: fd.vals[vi].label, col: cssCol(gc[vi]), notes: nn[vi], recs: nr[vi], s: [0, 0, 0], k: 1, h: 0 }; });
-  const pair = new Map(); for (const [i, j] of S.links) { const a = at.get(fd.of[i]), b = at.get(fd.of[j]); if (a == null || b == null || a === b) continue; const key = a < b ? a * 100 + b : b * 100 + a; pair.set(key, (pair.get(key) || 0) + 1); }
+  const St = Stars, fd = Store.field('space'), gc = Store.fieldColours('space', theme(), cur.palette), nv = fd.vals.length;
+  const cnt = new Int32Array(nv), nn = new Int32Array(nv), nr = new Int32Array(nv);
+  for (let i = 0; i < S.n; i++) { const k = fd.of[i]; cnt[k]++; if (S.layer[i]) nr[k]++; else nn[k]++; }
+  const ids = fd.vals.map((v, i) => i).filter(i => cnt[i] > 0).sort((a, b) => cnt[b] - cnt[a]).slice(0, 18), n = ids.length, at = new Int16Array(nv).fill(-1);
+  let total = 0; ids.forEach((vi, k) => { at[vi] = k; total += cnt[vi]; }); total = Math.max(1, total);
+  const cs = getComputedStyle(document.body); St.ink = cs.getPropertyValue('--ink').trim() || '#fff'; St.font = cs.getPropertyValue('--font') || 'sans-serif'; St.dark = !theme().ink;
+  const inkC = /^#[0-9a-f]{6}$/i.test(St.ink) ? hex(St.ink) : St.dark ? [1, 1, 1] : [0, 0, 0], mixc = (a, b, t) => [a[0] + (b[0] - a[0]) * t, a[1] + (b[1] - a[1]) * t, a[2] + (b[2] - a[2]) * t], far = St.dark ? [1, 1, 1] : [0, 0, 0];
+  /* every space has a share of the globe as large as its share of the record. They start evenly spread, the large ones
+     apart from each other, and are then eased away from one another until no two patches overlap */
+  const M = Math.min(total, ORB.MOTES), m = ids.map(vi => Math.max(Math.min(cnt[vi], 4), Math.round(M * cnt[vi] / total))), al = ids.map(vi => clamp(1.36 * Math.sqrt(cnt[vi] / total), 0.17, 1.15));
+  let step = 1; for (const c of [5, 7, 11, 3, 1]) if (n % c || c === 1) { step = c; break; }
+  const P = ids.map((vi, k) => { const j = (k * step) % n, u = 1 - 2 * (j + 0.5) / n, a = j * ORB.GOLD, q = Math.sqrt(1 - u * u); return [q * Math.cos(a), u, q * Math.sin(a)]; });
+  for (let it = 0; it < 220; it++) for (let i = 0; i < n; i++) for (let j = i + 1; j < n; j++) {
+    const a = P[i], b = P[j], d = clamp(a[0] * b[0] + a[1] * b[1] + a[2] * b[2], -1, 1), ang = Math.acos(d), want = (al[i] + al[j]) * 1.02 + 0.035; if (ang >= want) continue;
+    const push = (want - ang) * 0.22, wi = al[j] / (al[i] + al[j]), wj = 1 - wi;
+    let tx = a[0] * d - b[0], ty = a[1] * d - b[1], tz = a[2] * d - b[2], tl = Math.hypot(tx, ty, tz); if (tl < 1e-6) { tx = 1; ty = 0; tz = 0; tl = 1; }
+    let ux = b[0] * d - a[0], uy = b[1] * d - a[1], uz = b[2] * d - a[2], ul = Math.hypot(ux, uy, uz) || 1;
+    a[0] += tx / tl * push * wi; a[1] += ty / tl * push * wi; a[2] += tz / tl * push * wi; b[0] += ux / ul * push * wj; b[1] += uy / ul * push * wj; b[2] += uz / ul * push * wj;
+    const la = Math.hypot(a[0], a[1], a[2]), lb = Math.hypot(b[0], b[1], b[2]); a[0] /= la; a[1] /= la; a[2] /= la; b[0] /= lb; b[1] /= lb; b[2] /= lb;
+  }
+  const top = n ? cnt[ids[0]] : 1;
+  St.inkC = inkC;
+  const old = St.nodes;
+  St.nodes = ids.map((vi, k) => {
+    const c = P[k], h0 = Math.abs(c[1]) < 0.9 ? [0, 1, 0] : [1, 0, 0]; let u = [h0[1] * c[2] - h0[2] * c[1], h0[2] * c[0] - h0[0] * c[2], h0[0] * c[1] - h0[1] * c[0]]; const ul = Math.hypot(u[0], u[1], u[2]); u = [u[0] / ul, u[1] / ul, u[2] / ul];
+    const v = [c[1] * u[2] - c[2] * u[1], c[2] * u[0] - c[0] * u[2], c[0] * u[1] - c[1] * u[0]], col = gc[vi] || [0.8, 0.8, 0.8], was = old.find(o => o.label === fd.vals[vi].label);
+    return { p: [c[0] * ORB.RN, c[1] * ORB.RN, c[2] * ORB.RN], c, u, v, al: al[k], ca: Math.cos(al[k]), sa: Math.sin(al[k]), m: m[k], th0: orbHash(k, 5) * TAU, r: 1.7 + 2.3 * Math.sqrt(cnt[vi] / top), label: fd.vals[vi].label, rgb: col,
+      col: cssCol(col), tint: St.dark ? [cssCol(col), cssCol(mixc(col, far, 0.28)), cssCol(mixc(col, far, 0.6))] : [cssCol(col), cssCol(mixc(col, far, 0.18)), cssCol(mixc(col, far, 0.36))], pale: cssCol(mixc(col, inkC, 0.5)), c32: rgba32(St.dark ? mixc(col, far, 0.12) : col, St.dark ? 0.78 : 0.62),
+      notes: nn[vi], recs: nr[vi], n: cnt[vi], lit: cnt[vi], vis: cnt[vi], s: [0, 0, 0], k: 1, h: was ? was.h : 0, q: was ? was.q : 1, dim: was ? was.dim : 1, rim: was ? was.rim : 0 };
+  });
+  /* the dots: every space gives up an even sample of its entries, taken across its dates */
+  St.ofE = new Int8Array(S.n).fill(-1); St.fr = new Float32Array(S.n); St.state = new Uint8Array(S.n).fill(2); St.born = new Float32Array(S.n);
+  const seen = new Int32Array(n), list = [], o = [0, 0, 0];
+  for (let b = 0; b < S.n; b++) {
+    const e = S.byDate[b], k = at[fd.of[e]]; if (k < 0) continue; const c = cnt[ids[k]]; St.ofE[e] = k; St.fr[e] = (seen[k] + 0.5) / c;
+    if (Math.floor((seen[k] + 1) * m[k] / c) > Math.floor(seen[k] * m[k] / c)) { const hs = orbHash(e, 3); list.push([k * 3 + (hs < 0.56 ? 0 : hs < 0.88 ? 1 : 2), e, k]); }
+    seen[k]++;
+  }
+  list.sort((a, b) => a[0] - b[0]); const Mn = St.M = list.length;
+  St.mx = new Float32Array(Mn); St.my = new Float32Array(Mn); St.mz = new Float32Array(Mn); St.ms = new Float32Array(Mn); St.me = new Int32Array(Mn); St.mk = new Uint8Array(Mn); St.mb = new Float32Array(Mn).fill(1);
+  St.sx = new Float32Array(Mn); St.sy = new Float32Array(Mn); St.sr = new Float32Array(Mn); St.lv = new Uint8Array(Mn); St.mr = new Float32Array(Mn); St.runs = [];
+  list.forEach(([key, e, k], i) => {
+    orbPlace(St.nodes[k], St.fr[e], e, o); St.mx[i] = o[0]; St.my[i] = o[1]; St.mz[i] = o[2]; St.me[i] = e; St.mk[i] = k; const hs = orbHash(e, 4); St.ms[i] = hs > 0.97 ? 1.55 : 0.9 + 0.5 * hs * hs; St.mr[i] = orbHash(e, 9);
+    const last = St.runs[St.runs.length - 1]; if (last && last[2] === key) last[1] = i + 1; else St.runs.push([i, i + 1, key]);
+  });
+  const pair = new Map(); for (const [i, j] of S.links) { const a = at[fd.of[i]], b = at[fd.of[j]]; if (a < 0 || b < 0 || a === b) continue; const key = a < b ? a * 100 + b : b * 100 + a; pair.set(key, (pair.get(key) || 0) + 1); }
   let mx = 1; pair.forEach(c => { if (c > mx) mx = c; });
-  Stars.links = Array.from(pair, ([key, c]) => [Math.floor(key / 100), key % 100, c / mx]); Stars.adj = Stars.nodes.map(() => new Set()); Stars.links.forEach(([a, b]) => { Stars.adj[a].add(b); Stars.adj[b].add(a); });
-  const cs = getComputedStyle(document.body); Stars.ink = cs.getPropertyValue('--ink').trim() || '#fff'; Stars.font = cs.getPropertyValue('--font') || 'sans-serif'; Stars.hov = -1;
+  St.links = Array.from(pair, ([key, c]) => [Math.floor(key / 100), key % 100, c / mx, orbHash(key, 6)]); St.adj = St.nodes.map(() => new Set()); St.links.forEach(([a, b]) => { St.adj[a].add(b); St.adj[b].add(a); });
+  /* a space that has grown since the globe was last drawn says so: a ring goes out from it */
+  const now = perf(); if (St.prev && St.prev.name === S.rec.name && St.prev.n < S.n) St.nodes.forEach((nd, i) => { const was = St.prev.by.get(nd.label) || 0; if (nd.n > was) { St.rip.push([i, now + 0.25]); St.rip.push([i, now + 0.55]); } });
+  St.prev = { name: S.rec.name, n: S.n, by: new Map(St.nodes.map(nd => [nd.label, nd.n])) };
+  St.hov = -1; St.kb = Math.min(St.kb, n - 1); St._lit = null; St.sparks = []; St.nsp = 0; St.key = '\u0000'; St.settle = perf() + 1.6;
 }
-const starHit = p => { let best = -1, bd = 14 * 14; Stars.nodes.forEach((nd, i) => { const d = (nd.s[0] - p[0]) * (nd.s[0] - p[0]) + (nd.s[1] - p[1]) * (nd.s[1] - p[1]); if (d < bd && nd.s[2] < 0.75) { bd = d; best = i; } }); return best; };
+/* which dots are lit, counted again whenever the sheet's own answer to that changes */
+function orbCount(t) {
+  const St = Stars, N = St.nodes, vis = lay ? lay.vis : null, lit = litE.length === S.n ? litE : null, r0 = U.range[0], r1 = U.range[1], D = S.dateN, of = St.ofE, state = St.state, born = St.born;
+  const first = St._lit === null; St._lit = litE; St._vis = vis; St._r0 = r0; St._r1 = r1; St._sel = st.sel;
+  for (const nd of N) { nd.lit = 0; nd.vis = 0; }
+  let all = 0, on = 0;
+  for (let e = 0; e < S.n; e++) {
+    const k = of[e]; if (k < 0) continue; if (vis && !vis[e]) { state[e] = 0; continue; } N[k].vis++; all++;
+    if ((!lit || lit[e]) && D[e] >= r0 && D[e] <= r1) { state[e] = 2; N[k].lit++; on++; } else state[e] = 1;
+  }
+  St.filtered = on < all; let top = -1, mxl = 0; N.forEach((nd, i) => { if (nd.lit > mxl) { mxl = nd.lit; top = i; } }); St.top = top; St.maxLit = Math.max(1, mxl);
+  /* few enough lit, and every one of them is drawn, not a sample */
+  const sp = []; if (St.filtered && on > 0 && on <= ORB.SPARKS) { for (let e = 0; e < S.n; e++) { if (of[e] >= 0 && state[e] === 2) { sp.push(e); if (!born[e]) born[e] = t + (st.playing || first ? 0 : 0.3 * orbHash(e, 8)); } else born[e] = 0; } } else if (St.nsp) born.fill(0);
+  St.sparks = sp; St.nsp = sp.length;
+  if (!St.spp || St.spp.length < sp.length * 3) St.spp = new Float32Array(Math.max(64, sp.length) * 3);
+  const o = [0, 0, 0]; sp.forEach((e, i) => { orbPlace(N[of[e]], St.fr[e], e, o); St.spp[i * 3] = o[0]; St.spp[i * 3 + 1] = o[1]; St.spp[i * 3 + 2] = o[2]; });
+  /* what the globe should be facing: the chosen entry, or the lit space, or the space dived into, or where most of what is lit lies */
+  const sc = (cur.scope || []).find(s => s.f === 'space'), hs = st.filter.hi.filter(q => q.f.length === 1 && q.f[0] === 'space');
+  let key = '', an = -1, to = null;
+  if (st.sel >= 0 && of[st.sel] >= 0) { an = of[st.sel]; key = 's' + st.sel; to = orbPlace(N[an], St.fr[st.sel], st.sel, [0, 0, 0]); }
+  else if (hs.length) { const lb = hs[hs.length - 1].k[0]; an = N.findIndex(nd => nd.label === lb); key = 'h' + hs.map(q => q.k[0]).join('|'); }
+  else if (sc) { an = N.findIndex(nd => nd.label === sc.k); key = 'c' + sc.k; }
+  else if (St.filtered && !st.playing && top >= 0) { an = top; key = 'q' + top; }
+  St.anchor = an; St.mode = key.charAt(0);
+  if (key !== St.key) St.key = key;
+  St.settle = perf() + 1.6;
+}
+function orbAim(p) {                                         // turn so that p faces front, over a time that grows a little with the angle
+  const St = Stars, y1 = Math.atan2(p[0], -p[2]), p1 = clamp(Math.atan2(-p[1], Math.hypot(p[0], p[2])), -1.3, 1.3), dy = y1 - St.yaw, dyw = dy - TAU * Math.round(dy / TAU), ang = Math.hypot(dyw, p1 - St.pitch);
+  St.aim = { y0: St.yaw, p0: St.pitch, dy: dyw, dp: p1 - St.pitch, t0: perf(), dur: REDUCED ? 0.001 : clamp(0.42 + 0.3 * ang, 0.45, 1) }; St.vy = 0; St.vp = 0; St.settle = perf() + 1.6;
+}
+/* what is under the pointer: a space's light if it is close to one, or else the patch of the globe that is there */
+function orbHit(p) {
+  const St = Stars, N = St.nodes, g = St.geo; if (!g) return -1; let best = -1, bd = 10 * 10;
+  N.forEach((nd, i) => { if (nd.s[2] > 0.15) return; const d = (nd.s[0] - p[0]) * (nd.s[0] - p[0]) + (nd.s[1] - p[1]) * (nd.s[1] - p[1]); if (d < bd) { bd = d; best = i; } }); if (best >= 0) return best;
+  const X = (p[0] - g.cx) / g.R, Y = -(p[1] - g.cy) / g.R; let Z2 = -ORB.RC, k = 1;
+  for (let it = 0; it < 5; it++) { k = 1 / (1 + Z2 * ORB.PZ); const rr = ORB.RC * ORB.RC - (X * X + Y * Y) / (k * k); if (rr < 0) return -1; Z2 = -Math.sqrt(rr); }
+  const xv = X / k, yv = Y / k, y = yv * g.cp + Z2 * g.sp, Z = -yv * g.sp + Z2 * g.cp, x = xv * g.cyw - Z * g.syw, z = xv * g.syw + Z * g.cyw, l = Math.hypot(x, y, z) || 1; let bs = 1.04;
+  N.forEach((nd, i) => { const a = Math.acos(clamp((x * nd.c[0] + y * nd.c[1] + z * nd.c[2]) / l, -1, 1)) / nd.al; if (a < bs) { bs = a; best = i; } });
+  return best;
+}
+/* the dither: a lattice of single pixels, one every two pixels of the sidebar each way, each set or not by comparing
+   how much light falls there with a 4×4 Bayer threshold, so that light reads as a fine dot screen and never as a blur.
+   The air around the globe is lit from the upper left; each space's light falls off from the edge of its mark. */
+function orbDither(St, w, hgt, cx, cy, RL, e, dark, lights) {
+  const W = Math.max(1, Math.round(w)), H = Math.max(1, Math.round(hgt)), G = 2;
+  if (!St.dc || St.dc.width !== W || St.dc.height !== H) { St.dc = document.createElement('canvas'); St.dc.width = W; St.dc.height = H; St.dx = St.dc.getContext('2d'); St.di = St.dx.createImageData(W, H); St.du = new Uint32Array(St.di.data.buffer); St.dI = new Float32Array(W * H); }
+  const du = St.du, dI = St.dI; du.fill(0); dI.fill(0);
+  const lo = v => Math.max(0, Math.floor(v / G) * G);
+  /* the air: a band just outside the edge */
+  const Wd = 6 + 7 * e, Ro = RL + Wd, Ro2 = Ro * Ro, Ri2 = (RL + 1.2) * (RL + 1.2), S0 = (dark ? 0.52 : 0.46) * (St.kbF ? 1.35 : 1) * (0.55 + 0.45 * e), col = rgba32(St.inkC || [1, 1, 1], dark ? 0.5 : 0.36);
+  for (let py = lo(cy - Ro), y1 = Math.min(H - 1, Math.ceil(cy + Ro)); py <= y1; py += G) {
+    const dy = py + 0.5 - cy, row = py * W, br = ((py / G) & 3) * 4;
+    for (let px = lo(cx - Ro), x1 = Math.min(W - 1, Math.ceil(cx + Ro)); px <= x1; px += G) {
+      const dx = px + 0.5 - cx, rr = dx * dx + dy * dy; if (rr > Ro2 || rr < Ri2) continue;
+      const r = Math.sqrt(rr), u = 1 - (r - RL) / Wd, I = Math.pow(u, 1.7) * S0 * (0.3 + 0.7 * Math.max(0, 0.5 - 0.5 * (dx * 0.6 + dy * 0.8) / r));
+      if (I > BAYER[br + ((px / G) & 3)]) { du[row + px] = col; dI[row + px] = I; }
+    }
+  }
+  /* the lights: [x, y, radius of the mark, reach, strength, colour] */
+  for (const [sx, sy, rd, R, k, c] of lights) {
+    const span = R - rd; if (span <= 1 || k < 0.02) continue;
+    for (let py = lo(sy - R), y1 = Math.min(H - 1, Math.ceil(sy + R)); py <= y1; py += G) {
+      const dy = py + 0.5 - sy, row = py * W, br = ((py / G) & 3) * 4;
+      for (let px = lo(sx - R), x1 = Math.min(W - 1, Math.ceil(sx + R)); px <= x1; px += G) {
+        const dx = px + 0.5 - sx, r = Math.sqrt(dx * dx + dy * dy); if (r >= R || r < rd + 0.6) continue;
+        const u = 1 - (r - rd) / span, I = Math.pow(u, 1.5) * k;
+        if (I > BAYER[br + ((px / G) & 3)] && I > dI[row + px]) { du[row + px] = c; dI[row + px] = I; }
+      }
+    }
+  }
+  St.dx.putImageData(St.di, 0, 0);
+  return St.dc;
+}
 function tickStars(dt, t) {
   const cv = $('#stars'); if (!cv || !Stars.nodes.length || !cv.offsetWidth) return;
-  const dpr = Math.min(window.devicePixelRatio || 1, 2), w = cv.offsetWidth, hgt = cv.offsetHeight, St = Stars, N = St.nodes;
+  const dpr = Math.min(window.devicePixelRatio || 1, 3), w = cv.offsetWidth, hgt = cv.offsetHeight, St = Stars, N = St.nodes, n = N.length;
   if (cv.width !== Math.round(w * dpr) || cv.height !== Math.round(hgt * dpr)) { cv.width = Math.round(w * dpr); cv.height = Math.round(hgt * dpr); }
-  /* the hand leads and the globe follows a breath behind; let go and it coasts, then settles back into its slow turn */
-  if (St.drag) { const q = 1 - Math.exp(-dt * 20); St.yaw += (St.yawT - St.yaw) * q; St.pitch += (St.pitchT - St.pitch) * q; }
-  else { const want = St.hov < 0 && !REDUCED && t - St.lastMove > 1.4 ? 0.14 : 0; St.vy += (want - St.vy) * Math.min(1, dt * 1.5); St.vp *= Math.exp(-dt * 3.2); St.yaw += St.vy * dt; St.pitch = clamp(St.pitch + St.vp * dt, -1.3, 1.3); St.yawT = St.yaw; St.pitchT = St.pitch; }
-  St.grab += ((St.drag ? 1 : 0) - St.grab) * Math.min(1, dt * 9); St.zoom += (St.zoomT - St.zoom) * Math.min(1, dt * 10);
-  const x = cv.getContext('2d'), cy = Math.cos(St.yaw), sy = Math.sin(St.yaw), cp = Math.cos(St.pitch), sp = Math.sin(St.pitch), R0 = Math.min(w / 2.5, hgt / 2.25) * St.zoom * (1 + 0.05 * St.grab), ink = St.ink, cx = w / 2, cyy = hgt / 2;
-  const proj = (p, o) => { const X = p[0] * cy + p[2] * sy, Z = -p[0] * sy + p[2] * cy, Y = p[1] * cp - Z * sp, Z2 = p[1] * sp + Z * cp, k = 1 / (1 + Z2 * 0.3); o[0] = cx + X * R0 * k; o[1] = cyy - Y * R0 * k; o[2] = Z2; return k; };
+  if (litE !== St._lit || (lay ? lay.vis : null) !== St._vis || U.range[0] !== St._r0 || U.range[1] !== St._r1 || st.sel !== St._sel) orbCount(t);
+  /* the hand leads, a breath of smoothing behind it; let go and it glides on, slowing as if on a light bearing, and stops.
+     A turn asked for by a click or a key runs on an ease in and out. Otherwise nothing moves */
+  const ease = u => u < 0.5 ? 4 * u * u * u : 1 - Math.pow(-2 * u + 2, 3) / 2;
+  if (St.drag) { const q = 1 - Math.exp(-dt * 26); St.yaw += (St.yawT - St.yaw) * q; St.pitch += (St.pitchT - St.pitch) * q; }
+  else if (St.aim) { const A = St.aim, u = clamp((t - A.t0) / A.dur, 0, 1), k = ease(u); St.yaw = A.y0 + A.dy * k; St.pitch = A.p0 + A.dp * k; St.yawT = St.yaw; St.pitchT = St.pitch; St.left = 1 - u; if (u >= 1) { St.aim = null; St.rest = t; } }
+  else if (St.vy || St.vp || St.yaw !== St.yawT || St.pitch !== St.pitchT) {
+    /* where the hand would have carried it glides on, integrated exactly over the frame, and the globe follows it as it did the hand */
+    const fr = Math.exp(-dt * 2.4); St.yawT += St.vy * (1 - fr) / 2.4; St.pitchT += St.vp * (1 - fr) / 2.4; St.vy *= fr; St.vp *= fr;
+    if (St.pitchT > 1.3 || St.pitchT < -1.3) { St.pitchT = clamp(St.pitchT, -1.3, 1.3); St.vp = 0; }
+    if (Math.abs(St.vy) + Math.abs(St.vp) < 0.004) { St.vy = 0; St.vp = 0; }
+    const q = 1 - Math.exp(-dt * 26); St.yaw += (St.yawT - St.yaw) * q; St.pitch += (St.pitchT - St.pitch) * q;
+    if (!St.vy && !St.vp && Math.abs(St.yawT - St.yaw) + Math.abs(St.pitchT - St.pitch) < 1e-4) { St.yaw = St.yawT; St.pitch = St.pitchT; }
+  }
+  St.grab += ((St.drag ? 1 : 0) - St.grab) * Math.min(1, dt * 9); St.zoom += (St.zoomT - St.zoom) * Math.min(1, dt * 10); if (Math.abs(St.zoom - St.zoomT) < 1e-4) St.zoom = St.zoomT;
+  /* is anything changing: if not, the picture already on the canvas is right, and the frame is skipped */
+  const busy = !!agentNote, sig = [w, hgt, dpr, st.hov, st.sel, st.page, st.theme].join();
+  if (sig !== St.sig) { St.sig = sig; St.settle = t + 1.6; }
+  if (!(St.drag || St.aim || St.vy || St.vp || St.yaw !== St.yawT || St.pitch !== St.pitchT || St.zoom !== St.zoomT || St.grab > 0.002 || St.rip.length || busy || t < St.settle)) return;
+  St.drawn = (St.drawn || 0) + 1;
+  const PZ = ORB.PZ, SIL = ORB.RC / Math.sqrt(1 - ORB.RC * ORB.RC * PZ * PZ), e = 1, open = true;
+  const R0 = Math.min(w, hgt) * 0.445 * St.zoom * (1 + 0.035 * St.grab), cx = w / 2, cyy = hgt / 2, RL = R0 * SIL;
+  const x = cv.getContext('2d'), cy = Math.cos(St.yaw), sy = Math.sin(St.yaw), cp = Math.cos(St.pitch), sp = Math.sin(St.pitch), ink = St.ink, dark = St.dark;
+  const proj = (p, o) => { const X = p[0] * cy + p[2] * sy, Z = -p[0] * sy + p[2] * cy, Y = p[1] * cp - Z * sp, Z2 = p[1] * sp + Z * cp, k = 1 / (1 + Z2 * PZ); o[0] = cx + X * R0 * k; o[1] = cyy - Y * R0 * k; o[2] = Z2; return k; };
   for (const nd of N) nd.k = proj(nd.p, nd.s);
-  if (St.ptr && !St.drag) { St.hov = starHit(St.ptr); cv.style.cursor = St.hov >= 0 ? 'pointer' : 'grab'; }      // the globe turns under a still pointer, so what is under it is asked every frame
-  const hv = St.hov; if (hv >= 0) St.labI = hv; St.lab += ((hv >= 0 ? 1 : 0) - St.lab) * Math.min(1, dt * 12);
-  x.setTransform(dpr, 0, 0, dpr, 0, 0); x.clearRect(0, 0, w, hgt); x.strokeStyle = ink; x.lineCap = 'round';
-  /* three hoops, so the turning reads: the far half of each is fainter than the near half */
-  const _a = [0, 0, 0], _b = [0, 0, 0]; x.lineWidth = 0.6;
-  for (let g = 0; g < 3; g++) for (let i = 0; i < 48; i++) {
-    const a0 = i / 48 * TAU, a1 = (i + 1) / 48 * TAU, pt = (a, o) => { const c = Math.cos(a) * 0.92, s = Math.sin(a) * 0.92; return g === 0 ? proj([c, 0, s], o) : g === 1 ? proj([c, s, 0], o) : proj([0, c, s], o); };
-    pt(a0, _a); pt(a1, _b); x.globalAlpha = (_a[2] > 0 ? 0.05 : 0.13) * (1 + 0.8 * St.grab); x.beginPath(); x.moveTo(_a[0], _a[1]); x.lineTo(_b[0], _b[1]); x.stroke();
+  St.geo = { cx, cy: cyy, R: R0, RL, cyw: cy, syw: sy, cp, sp };
+  if (St.ptr && !St.drag) { St.hov = orbHit(St.ptr); cv.style.cursor = St.hov >= 0 ? 'pointer' : 'grab'; }
+  else if (!St.ptr && !St.drag) St.hov = -1;
+  const f = open ? (St.hov >= 0 ? St.hov : St.kb) : -1, hiK = new Set(st.filter.hi.filter(q => q.f.length === 1 && q.f[0] === 'space').map(q => q.k[0])), fan = st.sel >= 0 && St.nsp > 1 && St.mode === 's';
+  const qe = 1 - Math.exp(-dt * 9), qs = 1 - Math.exp(-dt * 5);
+  N.forEach((nd, i) => {
+    nd.h += ((i === f ? 1 : 0) - nd.h) * Math.min(1, dt * 14);
+    nd.dim += ((f < 0 || i === f || St.adj[f].has(i) ? 1 : 0.36) - nd.dim) * qe;
+    nd.q += ((!St.filtered ? 1 : nd.lit > 0 ? 0.42 + 0.58 * Math.sqrt(nd.lit / St.maxLit) : 0.1) - nd.q) * qs;
+    nd.rim += ((i === f ? 1 : hiK.has(nd.label) || (St.mode === 'c' && i === St.anchor) ? 0.62 : 0) - nd.rim) * qe;
+  });
+  /* every dot: where it is on the page, how large, and how bright, which is one of a few steps so that they can be drawn
+     many at a time */
+  const Mn = St.M, mx = St.mx, my = St.my, mz = St.mz, ms = St.ms, mb = St.mb, me = St.me, mk = St.mk, mr = St.mr, sx = St.sx, sy2 = St.sy, sr = St.sr, lv = St.lv, state = St.state, qb = REDUCED ? 1 : 1 - Math.exp(-dt * 7), LV = 7;
+  const share = 0.3 + 0.7 * e, dsz = 0.5 * (0.62 + 0.38 * e);
+  for (let i = 0; i < Mn; i++) {
+    const X = mx[i] * cy + mz[i] * sy, Z = -mx[i] * sy + mz[i] * cy, Y = my[i] * cp - Z * sp, Z2 = my[i] * sp + Z * cp, k = 1 / (1 + Z2 * PZ), s = state[me[i]];
+    mb[i] += ((s === 2 ? 1 : s === 1 ? 0.17 : 0.045) - mb[i]) * qb;
+    const a = mr[i] > share ? 0 : mb[i] * N[mk[i]].dim * (Z2 <= 0 ? 0.62 + 0.38 * -Z2 : 0.26 - 0.14 * Z2);
+    sx[i] = cx + X * R0 * k; sy2[i] = cyy - Y * R0 * k; sr[i] = ms[i] * k * dsz * (0.8 + 0.2 * mb[i]); lv[i] = a < 0.012 ? 0 : (Z2 <= 0 ? LV : 0) + Math.max(1, Math.min(LV, Math.ceil(Math.sqrt(a) * LV)));
   }
-  /* links bow in toward the middle of the globe */
-  for (const [a, b, wt] of St.links) {
-    const A = N[a], B = N[b], on = hv === a || hv === b; proj([(A.p[0] + B.p[0]) * 0.3, (A.p[1] + B.p[1]) * 0.3, (A.p[2] + B.p[2]) * 0.3], _a);
-    x.globalAlpha = (hv >= 0 ? (on ? 0.85 : 0.035) : 0.07 + 0.34 * wt * wt) * Math.min(1, 0.4 + 0.55 * Math.min(A.k, B.k)); x.lineWidth = on ? 0.9 : 0.6; x.beginPath(); x.moveTo(A.s[0], A.s[1]); x.quadraticCurveTo(_a[0], _a[1], B.s[0], B.s[1]); x.stroke();
+  x.setTransform(dpr, 0, 0, dpr, 0, 0); x.clearRect(0, 0, w, hgt); x.lineCap = 'round'; x.lineJoin = 'round';
+  const nodeR = nd => nd.r * nd.k * (1 + 0.24 * nd.h) * (0.72 + 0.28 * nd.q) * (0.62 + 0.38 * e), nodeA = (nd, front) => (front ? 1 : 0.32) * (0.2 + 0.8 * nd.q) * (0.35 + 0.65 * nd.dim);
+  /* the dithered light, under everything */
+  { const L = []; for (const nd of N) { const front = nd.s[2] <= 0.04, rd = nodeR(nd); L.push([nd.s[0], nd.s[1], rd, rd + (2.5 + 5.5 * e) * (1 + 0.35 * nd.h) + rd * 0.9, nodeA(nd, front) * (front ? 0.6 : 0.34) * (0.4 + 0.6 * e) * (1 + 0.45 * nd.h), nd.c32]); }
+    x.imageSmoothingEnabled = false; x.globalAlpha = 1; x.drawImage(orbDither(St, w, hgt, cx, cyy, RL, e, dark, L), 0, 0, Math.round(w), Math.round(hgt)); x.imageSmoothingEnabled = true; }
+  const dots = front => {
+    for (const [i0, i1, key] of St.runs) {
+      x.fillStyle = N[(key / 3) | 0].tint[key % 3];
+      for (let L = 1; L <= LV; L++) {
+        const want = (front ? LV : 0) + L; let any = false;
+        for (let i = i0; i < i1; i++) { if (lv[i] !== want) continue; if (!any) { x.beginPath(); any = true; } x.moveTo(sx[i] + sr[i], sy2[i]); x.arc(sx[i], sy2[i], sr[i], 0, TAU); }
+        if (any) { x.globalAlpha = (L / LV) * (L / LV) * (dark ? 0.92 : 1); x.fill(); }
+      }
+    }
+  };
+  const _a = [0, 0, 0], _b = [0, 0, 0], _c = [0, 0, 0], order = N.map((nd, i) => i).sort((a, b) => N[b].s[2] - N[a].s[2]);
+  const light = (i, front) => {                              // a space's own mark: a flat disc of its colour
+    const nd = N[i]; if ((nd.s[2] <= 0.04) !== front) return;
+    x.globalAlpha = Math.min(1, nodeA(nd, front) * 1.08); x.fillStyle = nd.col; x.beginPath(); x.arc(nd.s[0], nd.s[1], nodeR(nd), 0, TAU); x.fill();
+  };
+  /* the edge of the globe: one hairline, lit from the upper left */
+  { const g = x.createLinearGradient(cx - RL, cyy - RL, cx + RL, cyy + RL); g.addColorStop(0, ink); g.addColorStop(0.5, ink); g.addColorStop(1, 'rgba(128,128,128,0)');
+    x.strokeStyle = g; x.lineWidth = 0.6; x.globalAlpha = (dark ? 0.16 : 0.2) * (1 + 0.6 * St.grab + (St.kbF ? 1 : 0)); x.beginPath(); x.arc(cx, cyy, RL, 0, TAU); x.stroke(); }
+  dots(false); for (const i of order) light(i, false);
+  /* the links, through the middle of the globe: pale, tinted at each end with that end's colour. While the agents are filing, a glint runs along each */
+  const la = 0.25 + 0.75 * e;
+  for (const [a, b, wt, ph] of St.links) {
+    const A = N[a], B = N[b], on = f === a || f === b; _a[0] = (A.p[0] + B.p[0]) * 0.3; _a[1] = (A.p[1] + B.p[1]) * 0.3; _a[2] = (A.p[2] + B.p[2]) * 0.3; proj(_a, _c);
+    const al = la * (f >= 0 ? (on ? 0.92 : 0.03) : (0.06 + 0.4 * wt * wt) * (0.2 + 0.8 * Math.min(A.q, B.q)) * (fan ? 0.3 : 1)) * clamp(0.42 + 0.52 * Math.min(A.k, B.k), 0, 1);
+    if (al > 0.01) {
+      const g = x.createLinearGradient(A.s[0], A.s[1], B.s[0], B.s[1]); g.addColorStop(0, on ? A.tint[1] : A.pale); g.addColorStop(1, on ? B.tint[1] : B.pale);
+      x.strokeStyle = g; x.globalAlpha = al; x.lineWidth = on ? 0.9 : 0.55; x.beginPath(); x.moveTo(A.s[0], A.s[1]); x.quadraticCurveTo(_c[0], _c[1], B.s[0], B.s[1]); x.stroke();
+    }
+    if (!REDUCED && busy) {
+      const per = 1.5 + ph, u0 = ((t / per + ph * 7.13) % 1) * 1.25; if (u0 < 1) {
+        const u = ph > 0.5 ? u0 : 1 - u0, v = 1 - u; x.globalAlpha = Math.sin(Math.PI * u0) * Math.min(1, al * 1.4 + 0.25) * Math.min(A.q, B.q); x.fillStyle = dark ? '#fff' : ink;
+        x.beginPath(); x.arc(v * v * A.s[0] + 2 * u * v * _c[0] + u * u * B.s[0], v * v * A.s[1] + 2 * u * v * _c[1] + u * u * B.s[1], on ? 1 : 0.8, 0, TAU); x.fill();
+      }
+    }
   }
-  const hi = new Set(st.filter.hi.filter(q => q.f.length === 1 && q.f[0] === 'space').map(q => q.k[0])), selTop = st.sel >= 0 ? S.top[st.sel] : null;
-  for (const i of N.map((nd, i) => i).sort((a, b) => N[b].s[2] - N[a].s[2])) {                    // the far ones first
-    const nd = N[i], lit = hi.has(nd.label) || selTop === nd.label; nd.h += ((i === hv ? 1 : 0) - nd.h) * Math.min(1, dt * 14);
-    const r = nd.r * nd.k * (1 + 0.35 * nd.h), dim = hv >= 0 && i !== hv && !St.adj[hv].has(i);
-    x.globalAlpha = dim ? 0.25 : Math.min(1, 0.3 + 0.62 * nd.k); x.fillStyle = nd.col; x.shadowColor = nd.col; x.shadowBlur = dim ? 0 : 5 + 7 * nd.h; x.beginPath(); x.arc(nd.s[0], nd.s[1], r, 0, TAU); x.fill(); x.shadowBlur = 0;
-    if (lit || nd.h > 0.02) { x.globalAlpha = lit ? 1 : nd.h; x.lineWidth = 1; x.beginPath(); x.arc(nd.s[0], nd.s[1], r + 2.5 + 1.5 * (lit ? 1 : nd.h), 0, TAU); x.stroke(); }
+  /* an entry is chosen: a hairline from it to each linked entry in another space */
+  const spp = St.spp, spk = St.sparks, of = St.ofE;
+  if (fan && open) {
+    const p0 = orbPlace(N[of[st.sel]], St.fr[st.sel], st.sel, [0, 0, 0]), s0 = [0, 0, 0]; proj(p0, s0); x.lineWidth = 0.55; x.strokeStyle = ink; let drawn = 0;
+    const own = of[st.sel]; for (let i = 0; i < spk.length && drawn < 60; i++) { if (spk[i] === st.sel || of[spk[i]] === own) continue; drawn++;
+      _a[0] = (p0[0] + spp[i * 3]) * 0.34; _a[1] = (p0[1] + spp[i * 3 + 1]) * 0.34; _a[2] = (p0[2] + spp[i * 3 + 2]) * 0.34; proj(_a, _c); _a[0] = spp[i * 3]; _a[1] = spp[i * 3 + 1]; _a[2] = spp[i * 3 + 2]; const k = proj(_a, _a);
+      x.globalAlpha = e * clamp(0.2 + 0.4 * k, 0.1, 0.62) * clamp((t - St.born[spk[i]]) / 0.3, 0, 1); x.beginPath(); x.moveTo(s0[0], s0[1]); x.quadraticCurveTo(_c[0], _c[1], _a[0], _a[1]); x.stroke(); }
   }
-  if (St.lab > 0.02 && N[St.labI]) {
-    const nd = N[St.labI], t1 = nd.label === UNSORTED ? 'Being organised' : nd.label, t2 = fmtN(nd.notes) + ' notes \u00b7 ' + fmtN(nd.recs) + ' record'; x.textBaseline = 'alphabetic'; x.font = '600 11px ' + St.font;
-    const tw = Math.max(x.measureText(t1).width, x.measureText(t2).width), right = nd.s[0] + 14 + tw < w, tx = right ? nd.s[0] + 13 : Math.max(2, nd.s[0] - 13 - tw), ty = clamp(nd.s[1] - 4 - 4 * (1 - St.lab), 12, hgt - 16);
-    x.globalAlpha = St.lab; x.fillStyle = ink; x.fillText(t1, tx, ty); x.globalAlpha = 0.6 * St.lab; x.font = '500 10px ' + St.font; x.fillText(t2, tx, ty + 12);
+  dots(true);
+  /* the lit entries themselves, when there are few enough to draw every one */
+  const fine = clamp(Math.sqrt(36 / Math.max(1, spk.length)), 0.5, 1);
+  for (let i = 0; i < spk.length; i++) {
+    const ent = spk[i], nd = N[of[ent]]; _a[0] = spp[i * 3]; _a[1] = spp[i * 3 + 1]; _a[2] = spp[i * 3 + 2]; const k = proj(_a, _b), front = _b[2] <= 0, u = REDUCED ? 1 : clamp((t - St.born[ent]) / 0.34, 0, 1); if (u <= 0) continue;
+    const pop = 1 + 0.55 * (1 - u) * u * 4, r = (ent === st.sel ? 0 : 0.95) * fine * k * (0.6 + 0.4 * e) * (1 - (1 - u) * (1 - u)) * pop, a = (front ? 1 : 0.3) * nd.dim; if (r <= 0) continue;
+    x.globalAlpha = a; x.fillStyle = dark ? nd.tint[1] : nd.col; x.beginPath(); x.arc(_b[0], _b[1], r, 0, TAU); x.fill();
+  }
+  for (const i of order) light(i, true);
+  /* the edge of a space's patch, for the one pointed at and the ones lit on the sheet */
+  x.strokeStyle = ink; x.lineWidth = 0.6;
+  N.forEach(nd => {
+    if (nd.rim * e < 0.02) return; let pen = false; x.globalAlpha = 0.46 * nd.rim * e; x.beginPath();
+    for (let i = 0; i <= 64; i++) { const th = i / 64 * TAU, ct = Math.cos(th) * nd.sa * 1.03, sn = Math.sin(th) * nd.sa * 1.03; _a[0] = (nd.c[0] * nd.ca + nd.u[0] * ct + nd.v[0] * sn) * ORB.RC; _a[1] = (nd.c[1] * nd.ca + nd.u[1] * ct + nd.v[1] * sn) * ORB.RC; _a[2] = (nd.c[2] * nd.ca + nd.u[2] * ct + nd.v[2] * sn) * ORB.RC; proj(_a, _b);
+      if (_b[2] > 0.02) { pen = false; continue; } if (pen) x.lineTo(_b[0], _b[1]); else { x.moveTo(_b[0], _b[1]); pen = true; } }
+    x.stroke();
+  });
+  /* rings: around a lit space's mark, out from a click, and where the chosen entry and the one under the pointer on the sheet are */
+  x.lineWidth = 0.85;
+  N.forEach((nd, i) => { const lit = hiK.has(nd.label) || (St.mode === 'c' && i === St.anchor), a = Math.max(lit ? 1 : 0, nd.h) * (nd.s[2] <= 0.04 ? 1 : 0.3) * (0.3 + 0.7 * e); if (a < 0.02) return; x.globalAlpha = a; x.beginPath(); x.arc(nd.s[0], nd.s[1], nodeR(nd) + 2.4 + 1.1 * nd.h, 0, TAU); x.stroke(); });
+  St.rip = St.rip.filter(([i, t0]) => {
+    const u = (t - t0) / 0.7, nd = N[i]; if (u >= 1 || !nd) return false; if (u < 0) return true;
+    x.globalAlpha = 0.55 * (1 - u) * (1 - u); x.lineWidth = 0.8; x.beginPath(); x.arc(nd.s[0], nd.s[1], nodeR(nd) + 3 + 18 * (0.4 + 0.6 * e) * (1 - (1 - u) * (1 - u)), 0, TAU); x.stroke(); return true;
+  });
+  if (st.sel >= 0 && of[st.sel] >= 0) {
+    orbPlace(N[of[st.sel]], St.fr[st.sel], st.sel, _a); const k = proj(_a, _b), a = _b[2] <= 0 ? 1 : 0.3;
+    x.globalAlpha = a; x.fillStyle = dark ? '#fff' : ink; x.beginPath(); x.arc(_b[0], _b[1], 1.8 * k, 0, TAU); x.fill(); x.globalAlpha = a * 0.75; x.lineWidth = 0.8; x.beginPath(); x.arc(_b[0], _b[1], 4.4 * k, 0, TAU); x.stroke();
+  }
+  { const ent = st.hov >= 0 && st.hov !== st.sel && st.hov < S.n && of[st.hov] >= 0 && st.page === 'brain' ? st.hov : -1; if (ent >= 0) { orbPlace(N[of[ent]], St.fr[ent], ent, St.hereP); St.hereK = of[ent]; }
+    St.here += ((ent >= 0 ? 1 : 0) - St.here) * Math.min(1, dt * 12);
+    if (St.here > 0.02 && St.hereK >= 0) { const k = proj(St.hereP, _b) * (0.6 + 0.4 * e), a = St.here * (_b[2] <= 0 ? 1 : 0.35); x.globalAlpha = a; x.fillStyle = dark ? '#fff' : ink; x.beginPath(); x.arc(_b[0], _b[1], 1.4 * k, 0, TAU); x.fill(); x.globalAlpha = a * 0.7; x.lineWidth = 0.7; x.beginPath(); x.arc(_b[0], _b[1], 3.4 * k, 0, TAU); x.stroke(); } }
+  /* names, only while it is open, set in the type with a hairline of the ground around the letters and nothing else:
+     the space pointed at says what it holds; left alone, the globe names what it has turned to face; brought near, it names every space in view */
+  const tags = [], zl = clamp((St.zoom - 1.22) / 0.3, 0, 1), cnt = nd => St.filtered && nd.lit !== nd.n ? fmtN(nd.lit) + ' of ' + fmtN(nd.n) + ' lit' : fmtN(nd.notes) + ' notes · ' + fmtN(nd.recs) + ' record';
+  if (f >= 0) St.labI = f; St.lab += ((f >= 0 ? 1 : 0) - St.lab) * Math.min(1, dt * 12);
+  if (St.lab > 0.02 && N[St.labI]) tags.push([St.labI, St.lab, cnt(N[St.labI]), true]);
+  const still = (!St.aim || St.left < 0.3) && !St.drag; St.lead += ((f < 0 && still && St.anchor >= 0 ? 1 : 0) - St.lead) * Math.min(1, dt * (f < 0 && still ? 5 : 14));
+  if (St.lead > 0.02 && St.anchor >= 0) {
+    const an = N[St.anchor], q = St.mode === 'q'; if (an && an.s[2] <= 0.1) tags.push([St.anchor, St.lead * (1 - St.lab), q ? fmtN(an.lit) + ' lit' : St.mode === 'c' ? 'Open on the sheet' : St.mode === 's' ? (s => s.length > 30 ? s.slice(0, 29).trimEnd() + '…' : s)(S.rec.entries[st.sel].t || '') : fmtN(an.lit) + ' entries', false]);
+    if (q) N.map((nd, i) => i).filter(i => i !== St.anchor && N[i].lit > 0 && N[i].s[2] <= -0.15).sort((a, b) => N[b].lit - N[a].lit).slice(0, 2).forEach(i => tags.push([i, St.lead * (1 - St.lab) * 0.8, fmtN(N[i].lit) + ' lit', false]));
+  }
+  if (zl > 0.02) order.slice().reverse().forEach(i => { if (N[i].s[2] <= -0.2 && !tags.some(g => g[0] === i)) tags.push([i, zl * (1 - 0.6 * St.lab) * clamp(-N[i].s[2] * 2, 0, 1), '', false]); });
+  const boxes = [], ground = dark ? 'rgba(16,16,18,0.94)' : 'rgba(255,255,255,0.96)', te = clamp((e - 0.55) / 0.45, 0, 1);
+  x.textBaseline = 'alphabetic'; x.lineJoin = 'round'; x.strokeStyle = ground; x.lineWidth = 3.2;
+  for (const [i, a0, sub, strong] of tags) {
+    const a = a0 * te; if (a < 0.02) continue; const nd = N[i], t1 = nd.label === UNSORTED ? 'Being organised' : nd.label, F1 = '600 ' + (strong ? 11.5 : 10.5) + 'px ' + St.font, F2 = '500 10px ' + St.font;
+    x.font = F1; let tw = x.measureText(t1).width; if (sub) { x.font = F2; tw = Math.max(tw, x.measureText(sub).width); }
+    const ring = nodeR(nd) + 4, gap = ring + 6, fitR = nd.s[0] + gap + tw < w - 6, fitL = nd.s[0] - gap - tw > 6, th = sub ? 25 : 12;
+    let tx, ty;                                              // beside its mark, on the side away from the middle; if neither side has room, above it (below, near the top)
+    if (fitR && (nd.s[0] >= cx || !fitL)) tx = nd.s[0] + gap; else if (fitL) tx = nd.s[0] - gap - tw;
+    if (tx != null) ty = clamp(nd.s[1] + (sub ? -2 : 4), 12, hgt - (sub ? 16 : 4));
+    else { tx = clamp(nd.s[0] - tw / 2, 5, w - tw - 5); const up = nd.s[1] - ring - 8 - th > 4; ty = up ? nd.s[1] - ring - 6 - (sub ? 13 : 0) : nd.s[1] + ring + 16; }
+    const bx = [tx - 2, ty - 12, tx + tw + 2, ty - 12 + th + 2]; if (!strong && boxes.some(b => bx[0] < b[2] && bx[2] > b[0] && bx[1] < b[3] && bx[3] > b[1])) continue; boxes.push(bx);
+    x.globalAlpha = a; x.font = F1; x.strokeText(t1, tx, ty); x.fillStyle = ink; x.fillText(t1, tx, ty);
+    if (sub) { x.font = F2; x.globalAlpha = a; x.strokeText(sub, tx, ty + 12.5); x.globalAlpha = 0.64 * a; x.fillText(sub, tx, ty + 12.5); }
   }
   x.globalAlpha = 1;
 }
 (function starsWiring() {
-  const cv = $('#stars'); if (!cv) return; let down = null, moved = 0;
+  const cv = $('#stars'); if (!cv) return; let down = null, moved = 0, last = [-1, 0, ''];
   const at = e => { const r = cv.getBoundingClientRect(); return [e.clientX - r.left, e.clientY - r.top]; };
-  cv.addEventListener('pointerdown', e => { cv.setPointerCapture(e.pointerId); down = [e.clientX, e.clientY, performance.now()]; moved = 0; Stars.drag = true; Stars.vy = 0; Stars.vp = 0; Stars.yawT = Stars.yaw; Stars.pitchT = Stars.pitch; });
-  cv.addEventListener('pointermove', e => {
-    Stars.lastMove = perf();
-    if (!down) { Stars.ptr = at(e); return; }
-    const now = performance.now(), dx = e.clientX - down[0], dy = e.clientY - down[1], el = Math.max(8, now - down[2]) / 1000; moved += Math.abs(dx) + Math.abs(dy);
-    Stars.yawT += dx * 0.011; Stars.pitchT = clamp(Stars.pitchT + dy * 0.011, -1.3, 1.3);
-    Stars.vy += (clamp(dx * 0.011 / el, -3, 3) - Stars.vy) * 0.5; Stars.vp += (clamp(dy * 0.011 / el, -3, 3) - Stars.vp) * 0.5; down = [e.clientX, e.clientY, now];
+  /* a click on a space: light it on the sheet, or, from inside another space, go across to it. Twice: go inside it */
+  const act = (i, dive) => {
+    const St = Stars, nd = St.nodes[i]; if (!nd) return ''; const sel = { f: ['space'], k: [nd.label] }, sc = cur.scope || [];
+    if (st.page !== 'brain') setPage('brain'); if (!st.open) openBrain(true);
+    St.rip.push([i, perf()]);
+    if (dive) { diveInto(sel, true); return 'in'; }
+    if (sc.length) { if (sc.length === 1 && sc[0].f === 'space' && sc[0].k === nd.label) climbTo(0); else diveInto(sel, true); return 'in'; }
+    toggleHi(sel, nd.rgb); return 'hi';
+  };
+  /* a drag turns the globe so that the point under the hand stays under it; how fast it is let go is read from where the
+     hand was over the last tenth of a second, so one jittery event cannot fling it */
+  const per = () => 1 / Math.max(20, (Stars.geo ? Stars.geo.R : 80) * 1.12);
+  cv.addEventListener('pointerdown', e => {
+    if (e.button !== 0) return; Stars.settle = perf() + 1.6;
+    cv.setPointerCapture(e.pointerId); down = [e.clientX, e.clientY, e.timeStamp]; moved = 0; Stars.drag = true; Stars.aim = null; Stars.vy = 0; Stars.vp = 0; Stars.yawT = Stars.yaw; Stars.pitchT = Stars.pitch; Stars.trail = [[e.timeStamp, e.clientX, e.clientY]];
   });
-  const up = e => { if (!down) return; if (performance.now() - down[2] > 90) { Stars.vy = 0; Stars.vp = 0; } down = null; Stars.drag = false; Stars.ptr = at(e); if (moved < 4) { const i = starHit(at(e)); if (i >= 0) toggleHi({ f: ['space'], k: [Stars.nodes[i].label] }); } };
+  cv.addEventListener('pointermove', e => {
+    Stars.lastMove = perf(); Stars.settle = perf() + 1.6;
+    if (!down) { Stars.ptr = at(e); return; }
+    const evs = e.getCoalescedEvents ? e.getCoalescedEvents() : []; for (const c of (evs.length ? evs : [e])) Stars.trail.push([c.timeStamp || e.timeStamp, c.clientX, c.clientY]);
+    const now = e.timeStamp; while (Stars.trail.length > 2 && now - Stars.trail[0][0] > 120) Stars.trail.shift();
+    const dx = e.clientX - down[0], dy = e.clientY - down[1], k = per(); moved += Math.abs(dx) + Math.abs(dy);
+    Stars.yawT += dx * k; Stars.pitchT = clamp(Stars.pitchT + dy * k, -1.3, 1.3); down = [e.clientX, e.clientY, now];
+  });
+  const up = e => {
+    if (!down) return; down = null; Stars.drag = false; Stars.ptr = at(e); Stars.rest = perf(); Stars.settle = perf() + 1.6;
+    { const T = Stars.trail, now = e.timeStamp, k = per(); Stars.vy = 0; Stars.vp = 0;
+      if (T.length > 1 && now - T[T.length - 1][0] < 70) { const a = T[0], b = T[T.length - 1], el = Math.max(0.016, (b[0] - a[0]) / 1000); Stars.vy = clamp((b[1] - a[1]) * k / el, -7, 7); Stars.vp = clamp((b[2] - a[2]) * k / el, -7, 7); if (Math.abs(Stars.vy) + Math.abs(Stars.vp) < 0.08) { Stars.vy = 0; Stars.vp = 0; } }
+      Stars.trail = []; }
+    if (moved >= 4 || e.type === 'pointercancel') return;
+    const i = orbHit(at(e)), now = performance.now(), twice = i >= 0 && last[0] === i && now - last[1] < 420;
+    if (i < 0) { if (last[0] === -2 && now - last[1] < 420) { Stars.zoomT = 1; orbAim([Math.sin(0.6), -0.385, -Math.cos(0.6)]); last = [-1, 0, '']; } else last = [-2, now, '']; return; }   // twice on nothing: back to how it was
+    Stars.vy = 0; Stars.vp = 0;
+    if (twice) { if (last[2] === 'hi') act(i, true); last = [-1, 0, '']; } else { last = [i, now, act(i, false)]; orbAim(Stars.nodes[i].c); }
+    Stars.hov = -1; cv.style.cursor = 'pointer';             // the globe is about to turn; what is under the pointer is asked again on the next frame
+  };
   cv.addEventListener('pointerup', up); cv.addEventListener('pointercancel', up);
-  cv.addEventListener('pointerleave', () => { Stars.ptr = null; if (!down) Stars.hov = -1; });
-  cv.addEventListener('wheel', e => { e.preventDefault(); Stars.zoomT = clamp(Stars.zoomT * Math.exp(-e.deltaY * 0.0015), 0.6, 2.2); }, { passive: false });
-  cv.addEventListener('dblclick', () => { Stars.zoomT = 1; Stars.pitchT = Stars.pitch = 0.28; });
+  cv.addEventListener('pointerleave', () => { if (down) return; Stars.ptr = null; Stars.hov = -1; Stars.settle = perf() + 1.6; });
+  cv.addEventListener('wheel', e => { e.preventDefault(); Stars.ptr = at(e); Stars.lastMove = perf(); Stars.settle = perf() + 1.6; Stars.zoomT = clamp(Stars.zoomT * Math.exp(-e.deltaY * 0.0015), 0.7, 2.4); }, { passive: false });
+  cv.addEventListener('keydown', e => {
+    const St = Stars, n = St.nodes.length; if (!n || e.metaKey || e.ctrlKey || e.altKey) return;
+    if (e.key === 'ArrowRight' || e.key === 'ArrowDown') St.kb = (St.kb + 1) % n; else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') St.kb = St.kb < 0 ? n - 1 : (St.kb + n - 1) % n;
+    else if ((e.key === 'Enter' || e.key === ' ') && St.kb >= 0) { e.preventDefault(); e.stopPropagation(); act(St.kb, e.shiftKey); return; } else return;
+    e.preventDefault(); e.stopPropagation(); St.kbF = true; St.hov = -1; St.ptr = null; St.settle = perf() + 1.6; orbAim(St.nodes[St.kb].c);
+  });
+  cv.addEventListener('focus', () => { Stars.settle = perf() + 1.6; try { if (cv.matches(':focus-visible') && Stars.nodes.length) { Stars.kbF = true; if (Stars.kb < 0) { Stars.kb = 0; orbAim(Stars.nodes[0].c); } } } catch (e) { } });
+  cv.addEventListener('blur', () => { Stars.kb = -1; Stars.kbF = false; Stars.settle = perf() + 1.6; });
 })();
 
 /* ---------- pages that take the place of the sheet ---------- */
@@ -3954,6 +4267,7 @@ function fillClients(list, s) {
     for (const [id, name] of [['claudeDesktop', 'Claude Desktop'], ['claudeCode', 'Claude Code'], ['codex', 'Codex'], ['cursor', 'Cursor'], ['chatgpt', 'ChatGPT']]) list.append(irow({ id, name, desc: CLIENT_COPY[id] || 'Through developer mode and a tunnel you run.', pill: stPill('Desktop app'), off: true }));
     return;
   }
+  if (s.mas) { fillManual(list, s); return; }
   for (const c of s.clients) {
     const more = h('div');
     const act = async (fn, msg) => { try { fillClients(list, await fn()); if (msg) toast(msg); } catch (e) { more.textContent = ''; more.append(h('p', { class: 'err', text: e.message })); more.append(h('div', { class: 'code' }, h('code', { text: await Desk.connect.snippet(c.id) }), iconBtn('copy', 'Copy', async () => copyText(await Desk.connect.snippet(c.id))))); } };
@@ -3966,7 +4280,10 @@ function fillClients(list, s) {
     if (c.connected && c.current) more.append(h('p', { class: 'hint', text: c.restart }));
     list.append(irow({ id: c.id, name: c.label, desc: CLIENT_COPY[c.id], pill, actions, more: more }));
   }
-  /* ChatGPT: only connectors on the internet, so a tunnel the person runs */
+  fillClients.http(list, s);
+}
+/* ChatGPT: only connectors on the internet, so a tunnel the person runs */
+fillClients.http = function (list, s) {
   const http = s.http, toggle = async () => { try { fillClients(list, Object.assign({}, s, { http: await Desk.connect.http(!http.on) })); } catch (e) { toast(e.message); } };
   let more = null;
   if (http.on) {
@@ -3980,14 +4297,35 @@ function fillClients(list, s) {
   }
   list.append(irow({ id: 'chatgpt', name: 'ChatGPT', desc: 'Through developer mode on a paid plan, and a tunnel you run.', pill: http.on ? stPill('Serving', 'ok') : null, actions: [h('button', { type: 'button', class: http.on ? 'pill sm' : 'pill solid sm', text: http.on ? 'Turn off' : 'Set up', onclick: toggle })], more }));
 }
+/* the App Store build: Wit shows each app's setup, and the person pastes it in */
+const PASTE_WHERE = {
+  claudeDesktop: 'In Claude Desktop, open Settings → Developer → Edit Config. Put the wit entry inside "mcpServers", save, then quit and reopen Claude.',
+  claudeCode: 'Paste this into a terminal, then start a new Claude Code session.',
+  codex: 'Add this to ~/.codex/config.toml, then start a new Codex session.',
+  cursor: 'In Cursor, open Settings → MCP → Add new MCP server, or add the wit entry to ~/.cursor/mcp.json.'
+};
+function fillManual(list, s) {
+  for (const c of s.clients) {
+    const more = h('div'), shown = { on: false };
+    const show = async () => { if (shown.on) { more.textContent = ''; shown.on = false; return; } const text = await Desk.connect.snippet(c.id); more.textContent = ''; more.append(h('p', { class: 'hint', text: PASTE_WHERE[c.id] || '' }), h('div', { class: 'code' }, h('code', { text }), iconBtn('copy', 'Copy', () => copyText(text, 'Copied.')))); shown.on = true; };
+    list.append(irow({ id: c.id, name: c.label, desc: CLIENT_COPY[c.id], actions: [h('button', { type: 'button', class: 'pill solid sm', text: 'Show setup', onclick: show }), iconBtn('copy', 'Copy the setup', async () => copyText(await Desk.connect.snippet(c.id), c.id === 'claudeCode' ? 'Copied. Paste it into a terminal.' : 'Copied. ' + (PASTE_WHERE[c.id] || '')))], more }));
+  }
+  fillClients.http(list, s);
+}
 function fillSources(list, s) {
   list.textContent = '';
   for (const [id, name] of [['claudeCode', 'Claude Code'], ['codex', 'Codex']]) {
     if (!s) { list.append(irow({ id, name: name + ' sessions', desc: 'Filed every few minutes while you work.', pill: stPill('Desktop app'), off: true })); continue; }
     const x = s[id], where = x.root.replace(/^\/(Users|home)\/[^/]+/, '~');
+    if (x.pick && !x.picked) {                                       // the App Store build, before the folder is chosen
+      const dot = x.suggest.replace(/^\/(Users|home)\/[^/]+/, '~');
+      list.append(irow({ id, name: name + ' sessions', desc: 'Choose your ' + dot + ' folder once and Wit files new sessions from it.', actions: [h('button', { type: 'button', class: 'pill solid sm', text: 'Choose folder', onclick: async () => { const r = await Desk.sources.pick(id); fillSources(list, r); if (r[id].picked) toast('Reading ' + name + ' sessions. They appear in the brain as they are filed.'); } })] }));
+      continue;
+    }
     const desc = !x.exists ? 'Not on this computer yet. Wit looks in ' + where + '.' : fmtN(x.sessions) + (x.sessions === 1 ? ' session' : ' sessions') + ' in ' + where + (x.on ? ' · ' + fmtN(x.filed) + ' filed' + (x.waiting ? ', filing now' : '') : '');
     list.append(irow({ id, name: name + ' sessions', desc, pill: x.on ? stPill('On', 'ok') : !x.exists ? stPill('Not installed') : null, off: !x.exists && !x.on,
       actions: [x.on ? iconBtn('refresh', 'Check for new sessions now', async () => { const n = await Desk.sources.sync(); toast(n ? 'Filing ' + fmtN(n) + ' sessions.' : 'Nothing new.'); }) : null,
+        x.pick ? h('button', { type: 'button', class: 'pill sm', text: 'Change', title: 'Choose a different folder', onclick: async () => fillSources(list, await Desk.sources.pick(id)) }) : null,
         swBtn(x.on, 'File ' + x.label + ' sessions', async () => { fillSources(list, await Desk.sources.set(id, !x.on)); if (!x.on) toast('Reading ' + x.label + ' sessions. They appear in the brain as they are filed.'); }, !x.exists && !x.on)] }));
   }
 }
@@ -4836,9 +5174,9 @@ async function boot() {
   if (!VIB) Backdrop.set(true);
   requestAnimationFrame(frame);
   requestAnimationFrame(() => requestAnimationFrame(() => { sizeCanvas(); refit(true); Object.assign(cam, { d: goal.d }); cam.t = goal.t.slice(); document.body.classList.add('ready'); }));
-  /* the loading mark has about a second to assemble; then the screen opens and the record draws itself in */
+  /* the mark has about a second to draw itself in; then the black opens as a dithered iris and the record draws itself in behind it */
   if (/[?&]holdboot/.test(location.search)) return;       // for looking at the loading mark: leave it up
-  setTimeout(() => { document.body.classList.add('booted'); openBrain(); setTimeout(() => { const b = $('#boot'); if (b) b.remove(); }, 1100); }, Math.max(0, 1050 - (performance.now() - T0)));
+  setTimeout(() => { document.body.classList.add('booted'); openBrain(); if (window.__bootExit) window.__bootExit(); else { const b = $('#boot'); if (b) b.remove(); } }, Math.max(0, 1050 - (performance.now() - T0)));
   try { if (window.claude && typeof window.claude.use === 'function') window.claude.use('downloads').then(d => { downloads = d || null; }).catch(() => { }); } catch (e) { /* outside the viewer */ }
   deskBoot();
 }
