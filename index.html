@@ -1,0 +1,236 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Wit — A second brain for your notes and AI chats</title>
+<meta name="description" content="Wit reads your notes and AI chats on your own computer, files them, links them, and draws the whole record as a map you can turn, zoom into and search.">
+<meta name="theme-color" content="#040405">
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<link rel="icon" href="/assets/favicon-32.png" sizes="32x32" type="image/png">
+<link rel="apple-touch-icon" href="/assets/apple-touch-icon.png">
+<link rel="canonical" href="https://usewit.dev/">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://usewit.dev/">
+<meta property="og:title" content="Wit — A second brain for your notes and AI chats">
+<meta property="og:description" content="Files your notes and AI chats and draws them as a map you can explore. Runs on your own computer.">
+<meta property="og:image" content="https://usewit.dev/assets/og.png">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600&family=Geist+Mono:wght@400;500&display=swap">
+<style>
+*{box-sizing:border-box}
+html,body{margin:0;height:100%;background:#040405}
+body{color:#fff;font-family:'Geist',ui-sans-serif,system-ui,-apple-system,'Segoe UI',sans-serif;-webkit-font-smoothing:antialiased}
+a{color:#fff}
+.page{position:relative;min-height:100vh;min-height:100svh;overflow:hidden;display:flex;flex-direction:column}
+.layer{position:absolute;inset:0;pointer-events:none}
+.spot{background:radial-gradient(ellipse 520px 280px at 50% -60px,rgba(255,255,255,.06) 0%,rgba(255,255,255,0) 100%)}
+#art{width:100%;height:100%;display:block;animation:fade 2s ease both}
+.veil{background:radial-gradient(ellipse 400px 165px at 50% calc(50% - 22px),rgba(4,4,5,.62) 0%,rgba(4,4,5,0) 100%),linear-gradient(180deg,rgba(4,4,5,0) 78%,rgba(4,4,5,.7) 100%)}
+.grain{background-image:url(/assets/grain.png);background-size:200px 200px;opacity:.035}
+.home{position:absolute;z-index:2;top:20px;left:50%;transform:translateX(-50%);display:flex;color:#fff;opacity:.94}
+main{position:relative;z-index:1;flex:1;width:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:96px 24px 150px;text-align:center}
+h1{margin:0;font-size:28px;line-height:1.25;font-weight:500;letter-spacing:-.025em;text-wrap:balance;background:linear-gradient(90deg,#fff 0%,#fff 48%,rgba(255,255,255,.52) 100%);-webkit-background-clip:text;background-clip:text;color:transparent;-webkit-text-fill-color:transparent}
+.btns{margin-top:26px;display:flex;flex-wrap:wrap;justify-content:center;gap:10px}
+.btn{display:inline-flex;align-items:center;gap:8px;height:38px;padding:0 17px;border-radius:999px;font-size:14px;font-weight:500;text-decoration:none;transition:background .15s ease,border-color .15s ease}
+.btn.solid{background:#fff;color:#0a0a0a}
+.btn.solid:hover{background:#e9e9e9}
+.btn.ghost{border:1px solid rgba(255,255,255,.22);background:rgba(8,8,10,.6);color:#fff}
+.btn.ghost:hover{background:rgba(255,255,255,.09);border-color:rgba(255,255,255,.34)}
+.note{margin:14px 0 0;max-width:420px;font-size:12.5px;line-height:1.5;color:rgba(255,255,255,.58);text-wrap:balance}
+.apps{list-style:none;margin:30px 0 0;padding:0;display:flex;flex-wrap:wrap;justify-content:center;align-items:center;gap:16px}
+.apps li{display:flex}
+.apps img{display:block;width:18px;height:18px;opacity:.55;transition:opacity .2s ease}
+.apps li:hover img{opacity:.95}
+.foot{position:absolute;z-index:1;left:0;right:0;bottom:34px;padding:0 24px;display:flex;flex-direction:column;align-items:center;gap:12px}
+.cap{margin:0;font-size:10.5px;font-weight:500;letter-spacing:.2em;text-transform:uppercase;color:rgba(255,255,255,.55)}
+.plats{display:flex;flex-wrap:wrap;justify-content:center;gap:8px 22px}
+.plats a{display:inline-flex;align-items:center;gap:6px;font-size:13px;color:rgba(255,255,255,.8);text-decoration:none;transition:color .15s ease}
+.plats a:hover{color:#fff}
+a:focus-visible{outline:2px solid #fff;outline-offset:3px}
+.rise{animation:rise 1s cubic-bezier(.2,.7,.2,1) both}.d1{animation-delay:.12s}.d2{animation-delay:.24s}.d3{animation-delay:.36s}
+@keyframes fade{from{opacity:0}to{opacity:1}}
+@keyframes rise{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+@media (prefers-reduced-motion:reduce){#art,.rise{animation:none}}
+</style>
+</head>
+<body>
+<div class="page">
+<div class="layer spot" aria-hidden="true"></div>
+<div class="layer" aria-hidden="true"><canvas id="art"></canvas></div>
+<div class="layer veil" aria-hidden="true"></div>
+<div class="layer grain" aria-hidden="true"></div>
+
+<a href="/" class="home" aria-label="Wit">
+<svg width="24" height="24" viewBox="-310 -310 620 620" fill="currentColor" aria-hidden="true"><path d="M-48.82 -156.63A80 80 0 1 1 48.82 -156.63L39.15 -149.17A44 44 0 1 0 109.61 -108.49L111.23 -120.60A80 80 0 1 1 160.05 -36.03L148.76 -40.68A44 44 0 1 0 148.76 40.68L160.05 36.03A80 80 0 1 1 111.23 120.60L109.61 108.49A44 44 0 1 0 39.15 149.17L48.82 156.63A80 80 0 1 1 -48.82 156.63L-39.15 149.17A44 44 0 1 0 -109.61 108.49L-111.23 120.60A80 80 0 1 1 -160.05 36.03L-148.76 40.68A44 44 0 1 0 -148.76 -40.68L-160.05 -36.03A80 80 0 1 1 -111.23 -120.60L-109.61 -108.49A44 44 0 1 0 -39.15 -149.17L-48.82 -156.63Z"/></svg>
+</a>
+
+<main>
+<h1 class="rise">A second brain for your notes and AI chats</h1>
+<div class="btns rise d1">
+<a class="btn solid" href="https://github.com/Vorinos/Wit/releases">
+<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 4v11"/><path d="m6.5 10 5.5 5.5 5.5-5.5"/><path d="M5 20h14"/></svg>
+Download for Mac
+</a>
+<a class="btn ghost" href="https://github.com/Vorinos/Wit">
+<svg width="14" height="14" viewBox="0 0 24 24" fill="#F5B83D" aria-hidden="true"><path d="M12 2.5l2.9 6.1 6.6.8-4.9 4.6 1.3 6.6L12 17.3l-5.9 3.3 1.3-6.6-4.9-4.6 6.6-.8z"/></svg>
+Star on GitHub
+</a>
+<a class="btn ghost" href="/app/#brain">
+Open in browser
+<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 17 17 7"/><path d="M8 7h9v9"/></svg>
+</a>
+</div>
+<p class="note rise d2">Best on the desktop app. The browser version works too, without connected apps.</p>
+<ul class="apps rise d3" aria-label="Works with">
+<li title="Claude Desktop and Claude Code"><img src="/assets/glyph-claude.png" alt="Claude" width="18" height="18"></li>
+<li title="Codex"><img src="/assets/glyph-codex.png" alt="Codex" width="18" height="18"></li>
+<li title="ChatGPT exports"><img src="/assets/glyph-chatgpt.png" alt="ChatGPT" width="18" height="18"></li>
+<li title="Cursor"><img src="/assets/glyph-cursor.png" alt="Cursor" width="18" height="18"></li>
+</ul>
+</main>
+
+<div class="foot">
+<p class="cap">Available for</p>
+<nav class="plats" aria-label="Downloads">
+<a href="https://github.com/Vorinos/Wit/releases"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 4v11"/><path d="m6.5 10 5.5 5.5 5.5-5.5"/><path d="M5 20h14"/></svg>Apple Silicon</a>
+<a href="https://github.com/Vorinos/Wit/releases"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 4v11"/><path d="m6.5 10 5.5 5.5 5.5-5.5"/><path d="M5 20h14"/></svg>Intel</a>
+<a href="https://github.com/Vorinos/Wit/releases"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 4v11"/><path d="m6.5 10 5.5 5.5 5.5-5.5"/><path d="M5 20h14"/></svg>Windows</a>
+<a href="https://github.com/Vorinos/Wit/releases"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 4v11"/><path d="m6.5 10 5.5 5.5 5.5-5.5"/><path d="M5 20h14"/></svg>Linux</a>
+<a href="/app/#brain"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M3 12h18"/><path d="M12 3a14 14 0 0 1 0 18a14 14 0 0 1 0-18z"/></svg>Web</a>
+</nav>
+</div>
+</div>
+
+<script>
+(function () {
+  var cv = document.getElementById('art');
+  var ctx = cv.getContext && cv.getContext('2d');
+  if (!ctx) return;
+
+  var TINT = 0.8;
+  var reduce = !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches);
+
+  var seed = 90210;
+  function rnd() { seed = (seed * 1664525 + 1013904223) >>> 0; return seed / 4294967296; }
+  var base = [];
+  for (var i = 0; i < 256; i++) base.push(i);
+  for (i = 255; i > 0; i--) { var j = Math.floor(rnd() * (i + 1)); var tmp = base[i]; base[i] = base[j]; base[j] = tmp; }
+  var perm = new Uint8Array(512);
+  for (i = 0; i < 512; i++) perm[i] = base[i & 255];
+  var val = new Float32Array(256);
+  for (i = 0; i < 256; i++) val[i] = rnd();
+  function noise(x, y) {
+    var xi = Math.floor(x), yi = Math.floor(y), xf = x - xi, yf = y - yi, X = xi & 255, Y = yi & 255;
+    var a = val[perm[perm[X] + Y]], b = val[perm[perm[X + 1] + Y]], c = val[perm[perm[X] + Y + 1]], d = val[perm[perm[X + 1] + Y + 1]];
+    var u = xf * xf * (3 - 2 * xf), v = yf * yf * (3 - 2 * yf);
+    return a + (b - a) * u + (c - a) * v + (a - b - c + d) * u * v;
+  }
+
+  var MS = 320;
+  var PATH = 'M-48.82 -156.63A80 80 0 1 1 48.82 -156.63L39.15 -149.17A44 44 0 1 0 109.61 -108.49L111.23 -120.60A80 80 0 1 1 160.05 -36.03L148.76 -40.68A44 44 0 1 0 148.76 40.68L160.05 36.03A80 80 0 1 1 111.23 120.60L109.61 108.49A44 44 0 1 0 39.15 149.17L48.82 156.63A80 80 0 1 1 -48.82 156.63L-39.15 149.17A44 44 0 1 0 -109.61 108.49L-111.23 120.60A80 80 0 1 1 -160.05 36.03L-148.76 40.68A44 44 0 1 0 -148.76 -40.68L-160.05 -36.03A80 80 0 1 1 -111.23 -120.60L-109.61 -108.49A44 44 0 1 0 -39.15 -149.17L-48.82 -156.63Z';
+  function rasterize(blurs) {
+    var out = new Float32Array(MS * MS);
+    if (typeof Path2D === 'undefined') return out;
+    var oc = document.createElement('canvas'); oc.width = MS; oc.height = MS;
+    var o = oc.getContext('2d'); if (!o) return out;
+    var p = new Path2D(PATH);
+    o.translate(MS / 2, MS / 2); o.scale(MS / 640, MS / 640); o.fillStyle = '#fff';
+    if (!blurs.length) o.fill(p);
+    else { o.shadowColor = '#fff'; for (var k = 0; k < blurs.length; k++) { o.shadowBlur = blurs[k]; o.fill(p); } }
+    var data = o.getImageData(0, 0, MS, MS).data;
+    for (var q = 0; q < MS * MS; q++) out[q] = data[q * 4 + 3] / 255;
+    return out;
+  }
+  var MASK = rasterize([]);
+  var GLOW = rasterize([44, 18]);
+
+  var RAMP = ' .:-=+*#%@', L = RAMP.length;
+  var BAYER = [0, 8, 2, 10, 12, 4, 14, 6, 3, 11, 1, 9, 15, 7, 13, 5].map(function (v) { return ((v + 0.5) / 16 - 0.5) / L; });
+  var STOPS = [[0, [128, 222, 206]], [0.42, [244, 242, 255]], [0.7, [186, 172, 255]], [1, [236, 158, 204]]];
+  var PLAIN = [236, 236, 242];
+  function hex(c) { return '#' + c.map(function (x) { return ('0' + Math.round(x).toString(16)).slice(-2); }).join(''); }
+
+  var W = 1, H = 1, dpr = 1, fs = 12, cw = 7.2, lh = 15, cols = 1, rows = 1, grad = null;
+  function font(size) { return size + 'px "Geist Mono", ui-monospace, "SF Mono", Menlo, monospace'; }
+  function layout() {
+    dpr = Math.min(window.devicePixelRatio || 1, 2);
+    W = Math.max(1, cv.clientWidth); H = Math.max(1, cv.clientHeight);
+    cv.width = Math.round(W * dpr); cv.height = Math.round(H * dpr);
+    fs = W < 700 ? 10 : 12;
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    ctx.font = font(fs);
+    cw = ctx.measureText('M').width || fs * 0.6;
+    lh = Math.round(fs * 1.25);
+    cols = Math.ceil(W / cw) + 1; rows = Math.ceil(H / lh) + 1;
+    grad = ctx.createLinearGradient(0, 0, W, H);
+    for (var s = 0; s < STOPS.length; s++) {
+      var c = STOPS[s][1];
+      grad.addColorStop(STOPS[s][0], hex([PLAIN[0] + (c[0] - PLAIN[0]) * TINT, PLAIN[1] + (c[1] - PLAIN[1]) * TINT, PLAIN[2] + (c[2] - PLAIN[2]) * TINT]));
+    }
+  }
+
+  var pmx = -99999, pmy = -99999;
+  window.addEventListener('pointermove', function (e) { var r = cv.getBoundingClientRect(); pmx = e.clientX - r.left; pmy = e.clientY - r.top; }, { passive: true });
+
+  var t = 0, last = performance.now(), lastDraw = -1000, raf = 0;
+  function frame(now) {
+    if (!reduce) raf = requestAnimationFrame(frame);
+    if (!reduce && now - lastDraw < 33) return;
+    if (document.hidden) { last = now; return; }
+    var dt = Math.min(100, now - last); last = now; lastDraw = now;
+    if (!reduce) t += dt / 1000;
+
+    var CX = W / 2, CY = H / 2 - 20;
+    var S = Math.min(Math.max(W * 0.42, 220), H * 0.4), k = 310 / S;
+    var ang = t * 0.06, ca = Math.cos(-ang), sa = Math.sin(-ang);
+    var HX = Math.min(430, W * 0.52), HY = W < 700 ? 200 : 150, HCY = H / 2 - 27;
+    var BX = Math.min(330, W * 0.46), BY = 54, BCY = H - 50;
+    var scale = MS / 640;
+
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    ctx.clearRect(0, 0, W, H);
+    ctx.font = font(fs); ctx.textBaseline = 'top'; ctx.fillStyle = grad;
+
+    for (var r = 0; r < rows; r++) {
+      var py = r * lh + lh * 0.5, dim = '', bright = '';
+      for (var c = 0; c < cols; c++) {
+        var px = c * cw + cw * 0.5, dx = px - CX, dy = py - CY;
+        var mu = (dx * ca - dy * sa) * k, mv = (dx * sa + dy * ca) * k;
+        var uf = (mu + 320) * scale, vf = (mv + 320) * scale, m = 0, g = 0;
+        if (uf >= 0 && vf >= 0 && uf < MS && vf < MS) { var idx = (vf | 0) * MS + (uf | 0); m = MASK[idx]; g = GLOW[idx]; }
+        var n = noise(px * 0.012 + t * 0.32, py * 0.012 - t * 0.2);
+        var n2 = noise(px * 0.0045 - t * 0.05, py * 0.0045 + t * 0.07);
+        var light = 0.5 + 0.5 * Math.max(-1, Math.min(1, (-mu * 0.55 - mv * 0.83) / 290));
+        var I = m * (0.2 + 0.38 * light + 0.32 * n);
+        var halo = g - m; if (halo > 0) I += halo * (0.3 + 0.35 * n);
+        if (n2 > 0.55) I += (n2 - 0.55) * 0.9;
+        var rr = Math.sqrt(dx * dx + dy * dy) / S;
+        if (rr > 0.92) { var sn = Math.sin(rr * 10 - t * 1.25); if (sn > 0) { var s2 = sn * sn, s4 = s2 * s2; I += s4 * s4 * s2 * (0.22 + 0.3 * n) * Math.exp(-(rr - 0.92) * 1.5); } }
+        var ldx = px - pmx, ldy = py - pmy, ld = ldx * ldx + ldy * ldy;
+        if (ld < 40000) I += Math.exp(-ld / 12800) * (0.2 + 0.45 * n);
+        var ex = dx / HX, ey = (py - HCY) / HY, e = ex * ex + ey * ey; if (e < 1) I *= 0.04 + 0.96 * e * e * e;
+        var bx = dx / BX, by = (py - BCY) / BY, eb = bx * bx + by * by; if (eb < 1) I *= 0.12 + 0.88 * eb;
+        var q = I + BAYER[((r & 3) << 2) | (c & 3)];
+        q = q < 0 ? 0 : (q > 0.999 ? 0.999 : q);
+        var li = (q * L) | 0, ch = RAMP[li];
+        if (li <= 4) { dim += ch; bright += ' '; } else { dim += ' '; bright += ch; }
+      }
+      var y = r * lh;
+      ctx.globalAlpha = 0.4; ctx.fillText(dim, 0, y);
+      ctx.globalAlpha = 0.95; ctx.fillText(bright, 0, y);
+    }
+    ctx.globalAlpha = 1;
+  }
+
+  layout();
+  if (window.ResizeObserver) new ResizeObserver(function () { layout(); if (reduce) requestAnimationFrame(frame); }).observe(cv);
+  else window.addEventListener('resize', function () { layout(); if (reduce) requestAnimationFrame(frame); });
+  if (document.fonts && document.fonts.load) document.fonts.load(font(12)).then(function () { layout(); if (reduce) requestAnimationFrame(frame); }).catch(function () {});
+  raf = requestAnimationFrame(frame);
+})();
+</script>
+</body>
+</html>
