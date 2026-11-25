@@ -2203,26 +2203,47 @@ vec3 pal(float s){ s = mod(s, 7.); vec3 c = vec3(0.); for (int i = 0; i < 7; i++
 `;
   const VS_RB = `attribute vec3 aPos, aPrev, aNext; attribute vec4 aInfo;
 uniform mat4 uVP; uniform vec2 uRes; uniform float uW, uT; uniform vec4 uFx;
-varying vec3 vI; varying float vSw;
+varying vec3 vI; varying float vSw; varying float vHW; varying float vLen;
 ` + SLIP + `void main(){
   float s = aInfo.y, seed = aInfo.z;
   vec4 c = uVP*vec4(aPos, 1.), a = uVP*vec4(aPrev, 1.), b = uVP*vec4(aNext, 1.);
   vec2 d = (b.xy/max(b.w, .0001) - a.xy/max(a.w, .0001))*uRes; float l = length(d);
   vec2 n = l > .0001 ? vec2(-d.y, d.x)/l : vec2(0., 1.);
   float q = (s - (mod(uT*.13 + seed*.31, 1.4) - .2))/.05;                          // the glint, on its way along
-  c.xy += n*aInfo.x*uW*2./uRes*c.w;
+  float hw = uW*7.;                                                                 // room either side for the arc to jump about in
+  c.xy += n*aInfo.x*hw*2./uRes*c.w;
   gl_Position = slip(c, uFx);
-  vI = vec3(aInfo.x, s, seed); vSw = exp(-q*q);
+  vI = vec3(aInfo.x, s, seed); vSw = exp(-q*q); vHW = hw;
+  vLen = aInfo.w*l*.5/max(distance(aPrev, aNext), 1e-6);                         // the whole thread's length in screen pixels, so the kinks keep their size
 }`;
-  const FS_RB = HP + `varying vec3 vI; varying float vSw;
+  const FS_RB = HP + `varying vec3 vI; varying float vSw; varying float vHW; varying float vLen;
 uniform float uT, uAlpha, uInk, uPass, uKick;
-` + BAND + `void main(){
-  float x = vI.x, s = vI.y, seed = vI.z;
-  vec3 tint = pal(seed*1.9 + s*.8 + uT*.04 + .25*sin(6.2832*(s*.9 + uT*.021 + seed*.13)));   // about one step of the band along a thread, drifting
-  float line = exp(-x*x*(10. - 4.*vSw)), ends = smoothstep(0., .08, s)*smoothstep(1., .92, s), lift = .75 + .45*vSw + .5*uKick;
-  if (uInk > .5) { gl_FragColor = vec4(tint*.42, line*ends*uAlpha*(.7 + .3*vSw)); return; }        // on a pale ground: a fine dark line
-  if (uPass < .5) { gl_FragColor = vec4(mix(tint, vec3(1.), .3)*(line*.9 + exp(-x*x*2.4)*.16)*lift, ends*uAlpha); return; }   // under the glare: enough for a soft glow, no more
-  gl_FragColor = vec4(mix(tint, vec3(1.), .74 + .26*vSw), line*ends*uAlpha*min(1., .86 + .14*vSw + .2*uKick));                  // over it: the line itself, nearly white
+` + BAND + `float hz(float n){ return fract(sin(n*12.9898)*43758.5453); }
+float zig(float x, float k){ float i = floor(x); return mix(hz(i + k), hz(i + 1. + k), fract(x))*2. - 1.; }   // straight runs between random kinks: the shape a spark takes
+float tk(float x, float m){ return mod(floor(x), m); }                                                       // a counter that stays small, so the hash stays sharp
+void main(){
+  float x = vI.x, s = vI.y, seed = vI.z, px = vHW/16.8, u = s*vLen/px;                  // px: one screen pixel at this zoom; u: how far along, in those pixels
+  vec3 tint = pal(seed*1.9 + s*.8 + uT*.04), volt = mix(tint, vec3(.6, .76, 1.), .6);  // the thread's own colour, run cold
+  float strike = pow(max(0., sin(uT*.9 + seed*5.1)), 28.);                              // now and then the whole vein flares and re-forms
+  /* the bolt, in pixels: a slow wander that re-forms about once a second, and two finer layers of kinks that re-strike many times a second */
+  float k0 = tk(uT*.7, 97.), w = smoothstep(0., 1., fract(uT*.7));
+  float low = mix(zig(u/150. + seed*3.1, seed*11. + k0*5.3), zig(u/150. + seed*3.1, seed*11. + (k0 + 1.)*5.3), w);
+  float mid = zig(u/34., seed*23. + tk(uT*9. + strike*20., 251.)*3.7), fine = zig(u/9., seed*31. + tk(uT*17., 251.)*1.9);
+  float env = pow(max(0., sin(3.14159*s)), .5);                                           // pinned at both ends
+  float d = (low*5.5 + mid*3.2 + fine*1.4)*env*px*(1. + .5*strike);
+  float off = x*vHW - d, core = exp(-off*off/(.3*px*px)), glow = exp(-off*off/(3.2*px*px)), haze = exp(-off*off/(10.*px*px));
+  /* a fork: a fainter strand that splits away along some stretches and rejoins */
+  float split = smoothstep(.4, .85, zig(u/220. + seed*7., seed*5. + tk(uT*2.6, 97.)*9.1));
+  float d2 = d + zig(u/26., seed*41. + tk(uT*6., 251.)*2.3)*4.5*px*split*env;
+  float off2 = x*vHW - d2, core2 = exp(-off2*off2/(.22*px*px))*split;
+  /* how lit it is: dim most of the time, a flicker, packets of current running along it, the glint, and the odd strike */
+  float flick = .75 + .25*hz(tk(uT*24., 251.) + seed*19.);
+  float flow = pow(max(0., sin(u*.04 - uT*7. + seed*2.)), 16.);
+  float lit = flick*(.32 + .9*vSw + 1.3*strike + .5*flow + .5*uKick);
+  float ends = smoothstep(0., .05, s)*smoothstep(1., .95, s);
+  if (uInk > .5) { gl_FragColor = vec4(tint*.3, (core + .4*core2)*ends*uAlpha*clamp(.4 + lit, 0., 1.)); return; }          // on a pale ground: a fine dark crackle
+  if (uPass < .5) { gl_FragColor = vec4(volt*(core*.45 + core2*.15 + glow*.4 + haze*.07)*lit, ends*uAlpha); return; }       // under the glare: the light it throws, for the bloom to spread
+  gl_FragColor = vec4(mix(volt, vec3(1.), .5 + .4*min(1., lit)), (core + .4*core2 + glow*.08)*ends*uAlpha*clamp(lit, 0., 1.));   // over it: the vein itself, a pixel wide
 }`;
 
   const FS_DOWN = HP + 'uniform sampler2D uTex; uniform vec2 uPx, uRes;\n' +
@@ -4837,7 +4858,7 @@ const Threads = (function () {
       }
       const len = sAt[n - 1] || 1; for (let q = 0; q < n; q++) sAt[q] /= len;
       /* two triangles a step; every corner knows the points before and after it, so the ribbon turns without a seam */
-      const corner = (q, side) => { const o = q * 3, a = Math.max(0, q - 1) * 3, c2 = Math.min(n - 1, q + 1) * 3; V.push(pts[o], pts[o + 1], pts[o + 2], pts[a], pts[a + 1], pts[a + 2], pts[c2], pts[c2 + 1], pts[c2 + 2], side, sAt[q], ti, 0); };
+      const corner = (q, side) => { const o = q * 3, a = Math.max(0, q - 1) * 3, c2 = Math.min(n - 1, q + 1) * 3; V.push(pts[o], pts[o + 1], pts[o + 2], pts[a], pts[a + 1], pts[a + 2], pts[c2], pts[c2 + 1], pts[c2 + 2], side, sAt[q], ti, len); };
       for (let q = 0; q < n - 1; q++) { corner(q, -1); corner(q, 1); corner(q + 1, -1); corner(q + 1, -1); corner(q, 1); corner(q + 1, 1); }
       T.push({ f, pts, sAt, n, name: null });
     }
@@ -4850,7 +4871,8 @@ const Threads = (function () {
     const dt = clamp(t - lastT, 0, 0.1); lastT = t;
     const on = shown > 0 && st.threads && st.page === 'brain', zoom = clamp(Math.pow(fitDist / Math.max(cam.d, 1e-6), 0.25), 1, 1.5);
     U.threads = (U.threads || 0) + ((on ? 1 : 0) - (U.threads || 0)) * 0.12;
-    U.thrW = 2.4 * Math.min(zoom, 1.5);                      // the strip is under 5 px across; the line in it is about one and a half U.thrT = REDUCED ? 0 : t; U.thrKick = (U.thrKick || 0) * Math.exp(-dt * 2.4);
+    U.thrW = 2.4 * Math.min(zoom, 1.5);                      // a unit of the vein: the strip runs seven of these either side, and the vein itself is about a pixel
+    U.thrT = REDUCED ? 0 : t; U.thrKick = (U.thrKick || 0) * Math.exp(-dt * 2.4);
     if (!on) return;
     const open = R.mix > 0.98, placed = [];
     for (let i = 0; i < T.length; i++) {
