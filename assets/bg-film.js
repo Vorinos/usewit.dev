@@ -1,7 +1,8 @@
 /* The background of usewit.dev: a soap film, the thinnest water there is.
    Its thickness is simulated as a fluid: it drains, so it is black-thin up top (behind the words) and thicker below;
-   thin patches rise as plumes, thick ones sink, and the pointer stirs it. Each pixel's colour is light interfering with
-   itself across that thickness, worked out over the visible spectrum. WebGL2; without it the page keeps a dark gradient. */
+   the film is drawn once in motion and then holds still; it only moves when the pointer moves through it, slowly and
+   smoothly, and settles again a few seconds later. Each pixel's colour is light interfering with itself across that
+   thickness, worked out over the visible spectrum. WebGL2; without it the page keeps a dark gradient. */
 (function () {
   var start = /* Background — "Film".
    A soap film, the thinnest water there is, filling the window. Its colours are not painted on: the film's thickness is
@@ -23,7 +24,7 @@ function (cv) {
   if (window.IntersectionObserver) { io = new IntersectionObserver(function (e) { visible = e[e.length - 1].isIntersecting; }); io.observe(cv); }
 
 
-  var EXPO = 2.0, THICK = 0.75, BUOY = 1.2, STIR = 0.06, RELAXR = 0.2;
+  var EXPO = 2.0, THICK = 0.75, BUOY = 1.2, STIR = 0.06, RELAXR = 0.2, WARM = 300;
   var reduce = !!(window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches);
 
   function shader(type, src) {
@@ -76,8 +77,9 @@ void main(){
   // stir: slow swirling currents, buoyancy (thin film rises), and the pointer
   var FORCE = program(`
 uniform sampler2D uVel, uThick;
-uniform float uT, uDt, uAspect, uBuoy, uStir, uK;
-uniform vec4 uPtr;                  // x, y (0..1), dx, dy (per second, screen heights)
+uniform float uT, uDt, uAspect, uBuoy, uStir, uK, uDrag, uOn;
+uniform vec4 uSeg;                  // the pointer went from (x, y) to (z, w) since the last step, 0..1
+uniform vec2 uPV;                   // the speed the film is pulled to under the pointer, screen heights per second
 float psi(vec2 p){ return n2(p * 2.2 + vec2(0.0, uT * 0.05)) + 0.5 * n2(p * 4.7 - vec2(uT * 0.04, 0.0) + 7.0) + 0.22 * n2(p * 11.0 + vec2(uT * 0.09, -uT * 0.05) + 3.0); }
 void main(){
   vec2 uv = UV(), p = vec2(uv.x * uAspect, uv.y);
@@ -87,9 +89,11 @@ void main(){
   float d = texture(uThick, uv).x;
   float buoy = uBuoy * (rest(uv.y, uK) - d);                                // thinner than its neighbours → rises
   v += uDt * (uStir * curlF + vec2(0.0, buoy));
-  vec2 dp = (p - vec2(uPtr.x * uAspect, uPtr.y));
-  v += uDt * uPtr.zw * 9.0 * exp(-dot(dp, dp) / 0.004);
-  v *= 1.0 - uDt * 0.12;                                                     // the film's own drag
+  // the pointer: a wide soft brush along the whole path it moved, easing the film toward a slower copy of its motion
+  vec2 a = vec2(uSeg.x * uAspect, uSeg.y), b = vec2(uSeg.z * uAspect, uSeg.w), ab = b - a;
+  vec2 dp = p - (a + ab * clamp(dot(p - a, ab) / max(dot(ab, ab), 1e-8), 0.0, 1.0));
+  v = mix(v, uPV, clamp(uDt * 6.0 * uOn * exp(-dot(dp, dp) / 0.011), 0.0, 1.0));
+  v *= 1.0 - uDt * uDrag;                                                    // the film's own drag
   o = vec4(v, 0.0, 1.0);
 }`);
   var CURL = program(`
@@ -143,12 +147,12 @@ void main(){
   // the film keeps draining toward its resting profile, and is fed a little from the bottom edge
   var RELAX = program(`
 uniform sampler2D uThick;
-uniform float uDt, uT, uK, uRelax;
+uniform float uDt, uT, uK, uRelax, uLow, uFeed;
 void main(){
   vec2 uv = UV();
   float d = texture(uThick, uv).x, r = rest(uv.y, uK);
-  d += (r - d) * uDt * uRelax * (uv.y > Y0 ? 1.0 + 6.0 * smoothstep(Y0, Y0 + 0.12, uv.y) : 1.0);    // black film eats what rises into it
-  d += uDt * 0.35 * smoothstep(0.06, 0.0, uv.y) * (n2(vec2(uv.x * 9.0, uT * 0.4)) - 0.35);
+  d += (r - d) * uDt * uRelax * (uv.y > Y0 ? 1.0 + 6.0 * smoothstep(Y0, Y0 + 0.12, uv.y) : uLow);    // black film eats what rises into it
+  d += uFeed * uDt * 0.35 * smoothstep(0.06, 0.0, uv.y) * (n2(vec2(uv.x * 9.0, uT * 0.4)) - 0.35);
   o = vec4(max(d, 0.0), 0.0, 0.0, 1.0);
 }`);
   var COPY = program(`
@@ -250,28 +254,43 @@ void main(){
   }
 
   /* ---------- pointer ---------- */
-  var ptr = { x: 0.5, y: 0.5, dx: 0, dy: 0, t: 0 }, px = null;
+  // where the pointer is, where it was at the last step, how fast it is going (raw and smoothed), and when it last moved
+  var ptr = { x: 0.5, y: 0.5, ax: 0.5, ay: 0.5, vx: 0, vy: 0, sx: 0, sy: 0 }, px = null, lastMove = -1e9;
   on(window, 'pointermove', function (e) {
     var r = cv.getBoundingClientRect(), x = (e.clientX - r.left) / r.width, y = 1 - (e.clientY - r.top) / r.height, now = performance.now();
-    if (px) { var dt = Math.max(8, now - px.t) / 1000; ptr.dx = Math.max(-3, Math.min(3, (x - px.x) * aspect / dt)); ptr.dy = Math.max(-3, Math.min(3, (y - px.y) / dt)); }
-    ptr.x = x; ptr.y = y; px = { x: x, y: y, t: now };
+    if (px && now - px.t < 200) {
+      var dt = Math.max(8, now - px.t) / 1000;
+      ptr.vx = (x - px.x) * aspect / dt; ptr.vy = (y - px.y) / dt;
+    } else { ptr.ax = x; ptr.ay = y; ptr.vx = 0; ptr.vy = 0; }
+    ptr.x = x; ptr.y = y; px = { x: x, y: y, t: now }; lastMove = now;
   }, { passive: true });
 
   /* ---------- one step of the film ---------- */
-  var DT = 1 / 60, simT = 0;
-  function step() {
-    simT += DT;
-    draw(FORCE, vel.w, function (u, tex) { tex('uVel', vel.r.tex); tex('uThick', thick.r.tex); gl.uniform1f(u.uT, simT); gl.uniform1f(u.uDt, DT); gl.uniform1f(u.uAspect, aspect);
-      gl.uniform1f(u.uBuoy, BUOY); gl.uniform1f(u.uStir, STIR); gl.uniform1f(u.uK, THICK); gl.uniform4f(u.uPtr, ptr.x, ptr.y, ptr.dx, ptr.dy); }); vel.swap();
-    ptr.dx *= 0.85; ptr.dy *= 0.85;
+  /* Two ways of stepping. While the page loads, the film is run for a few seconds with its own currents (drainage,
+     plumes, slow swirls) to give it its shape. After that it has no currents of its own: only the pointer moves it,
+     the film is thick and draggy so the motion is slow and smooth, and it comes to rest a few seconds after. */
+  var SHAPE = { buoy: BUOY, stir: STIR, drag: 0.12, vort: 10.0, low: 1.0, feed: 1.0 };
+  var STILL = { buoy: 0.0, stir: 0.0, drag: 1.3, vort: 2.5, low: 0.0, feed: 0.0 };
+  var DT = 1 / 60, PACE = 0.6, simT = 0;
+  function step(M, dt, on) {
+    simT += dt;
+    var seg = [ptr.ax, ptr.ay, ptr.x, ptr.y];
+    ptr.ax = ptr.x; ptr.ay = ptr.y;
+    var vx = ptr.vx * 0.42, vy = ptr.vy * 0.42, m = Math.sqrt(vx * vx + vy * vy);
+    if (m > 1.1) { vx *= 1.1 / m; vy *= 1.1 / m; }                      // never faster than this, however quick the hand
+    ptr.sx += (vx - ptr.sx) * 0.18; ptr.sy += (vy - ptr.sy) * 0.18;      // and eased in
+    draw(FORCE, vel.w, function (u, tex) { tex('uVel', vel.r.tex); tex('uThick', thick.r.tex); gl.uniform1f(u.uT, simT); gl.uniform1f(u.uDt, dt); gl.uniform1f(u.uAspect, aspect);
+      gl.uniform1f(u.uBuoy, M.buoy); gl.uniform1f(u.uStir, M.stir); gl.uniform1f(u.uK, THICK); gl.uniform1f(u.uDrag, M.drag); gl.uniform1f(u.uOn, on);
+      gl.uniform4f(u.uSeg, seg[0], seg[1], seg[2], seg[3]); gl.uniform2f(u.uPV, ptr.sx, ptr.sy); }); vel.swap();
     draw(CURL, curl, function (u, tex) { tex('uVel', vel.r.tex); });
-    draw(VORT, vel.w, function (u, tex) { tex('uVel', vel.r.tex); tex('uCurl', curl.tex); gl.uniform1f(u.uDt, DT); gl.uniform1f(u.uAmt, 10.0); }); vel.swap();
+    draw(VORT, vel.w, function (u, tex) { tex('uVel', vel.r.tex); tex('uCurl', curl.tex); gl.uniform1f(u.uDt, dt); gl.uniform1f(u.uAmt, M.vort); }); vel.swap();
     draw(DIV, div, function (u, tex) { tex('uVel', vel.r.tex); });
     for (var i = 0; i < 22; i++) { draw(JACOBI, prs.w, function (u, tex) { tex('uP', prs.r.tex); tex('uDiv', div.tex); }); prs.swap(); }
     draw(GRAD, vel.w, function (u, tex) { tex('uP', prs.r.tex); tex('uVel', vel.r.tex); }); vel.swap();
-    draw(ADVECT, vel.w, function (u, tex) { tex('uVel', vel.r.tex); tex('uSrc', vel.r.tex); gl.uniform1f(u.uDt, DT); gl.uniform1f(u.uKeep, 0.999); gl.uniform1f(u.uAspect, aspect); }); vel.swap();
-    draw(ADVECT, thick.w, function (u, tex) { tex('uVel', vel.r.tex); tex('uSrc', thick.r.tex); gl.uniform1f(u.uDt, DT); gl.uniform1f(u.uKeep, 1.0); gl.uniform1f(u.uAspect, aspect); }); thick.swap();
-    draw(RELAX, thick.w, function (u, tex) { tex('uThick', thick.r.tex); gl.uniform1f(u.uDt, DT); gl.uniform1f(u.uT, simT); gl.uniform1f(u.uK, THICK); gl.uniform1f(u.uRelax, RELAXR); }); thick.swap();
+    draw(ADVECT, vel.w, function (u, tex) { tex('uVel', vel.r.tex); tex('uSrc', vel.r.tex); gl.uniform1f(u.uDt, dt); gl.uniform1f(u.uKeep, 0.999); gl.uniform1f(u.uAspect, aspect); }); vel.swap();
+    draw(ADVECT, thick.w, function (u, tex) { tex('uVel', vel.r.tex); tex('uSrc', thick.r.tex); gl.uniform1f(u.uDt, dt); gl.uniform1f(u.uKeep, 1.0); gl.uniform1f(u.uAspect, aspect); }); thick.swap();
+    draw(RELAX, thick.w, function (u, tex) { tex('uThick', thick.r.tex); gl.uniform1f(u.uDt, dt); gl.uniform1f(u.uT, simT); gl.uniform1f(u.uK, THICK); gl.uniform1f(u.uRelax, RELAXR);
+      gl.uniform1f(u.uLow, M.low); gl.uniform1f(u.uFeed, M.feed); }); thick.swap();
   }
   function paint() {
     draw(RENDER, null, function (u, tex) { tex('uThick', thick.r.tex); tex('uFilm', spec.tex); gl.uniform1f(u.uT, simT); gl.uniform1f(u.uAspect, aspect); gl.uniform1f(u.uExpo, EXPO);
@@ -282,18 +301,26 @@ void main(){
   draw(SPECTRUM, spec, function () {});
   layout();
   if (window.ResizeObserver) (ro = new ResizeObserver(function () { layout(); paint(); })).observe(cv);
-  for (var w = 0; w < 240; w++) step();          // start with the film already moving
-  if (reduce) { paint(); return stop; }
+  for (var w = 0; w < WARM; w++) step(SHAPE, DT, 0);      // give the film its shape, then hold it there
+  paint();
+  if (reduce) return stop;
+  var SETTLE = 3200, EASE = 900;                         // ms it keeps moving after the pointer stops, then eases to rest
   var last = performance.now(), acc = 0, slow = 0, seen = 0;
   (function tick(now) {
     if (dead) return;
     raf = requestAnimationFrame(tick);
-    if (document.hidden || !visible) { last = now; return; }
     var dt = now - last; last = now;
-    acc += Math.min(0.1, dt / 1000);
+    if (document.hidden || !visible) return;
+    var since = now - lastMove;
+    if (since > SETTLE + EASE) { acc = 0; return; }      // at rest: nothing to draw
+    var pace = since < SETTLE ? 1 : 1 - (since - SETTLE) / EASE;
+    pace = pace * pace * (3 - 2 * pace);
+    var on = Math.max(0, 1 - since / 120);               // the brush only acts while the pointer is actually moving
     if (++seen > 30 && level < LEVELS.length - 1) { slow = slow * 0.95 + (dt > 24 ? 1 : 0) * 0.05; if (slow > 0.5) { level++; slow = 0; seen = 0; layout(); } }
-    var n = 0; while (acc >= DT && n < 2) { step(); acc -= DT; n++; }
+    acc += Math.min(0.1, dt / 1000);
+    var n = 0; while (acc >= DT && n < 2) { step(STILL, DT * PACE * pace, on); acc -= DT; n++; }
     if (n === 2) acc = 0;
+    if (since > 120) { ptr.vx *= 0.8; ptr.vy *= 0.8; }
     paint();
   })(last);
   return stop;
