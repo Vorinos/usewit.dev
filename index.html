@@ -59,50 +59,6 @@ h1{margin:0;font-size:28px;line-height:1.25;font-weight:500;letter-spacing:-.025
 .plats a:hover{color:#fff}
 a:focus-visible{outline:2px solid #fff;outline-offset:3px}
 .rise{animation:rise 1s cubic-bezier(.2,.7,.2,1) both}.d1{animation-delay:.12s}.d2{animation-delay:.24s}.d3{animation-delay:.36s}
-/* ---------- the notch: black fused to the window's edges, corners curving back into the edge it hangs from ---------- */
-:root{--ng:#19f59a;--ne:cubic-bezier(.32,.72,0,1);--ns:cubic-bezier(.34,1.36,.5,1)}
-.fil::before,.fil::after{content:"";position:absolute;width:18px;height:18px;pointer-events:none}
-.home{top:0;padding:8px 26px 10px;background:#000;border-radius:0 0 20px 20px;align-items:center;gap:9px;text-decoration:none;font-size:15px;font-weight:600;letter-spacing:-.02em}
-.home::before{left:-18px;top:0;background:radial-gradient(circle at 0 100%,transparent 17.5px,#000 18px)}
-.home::after{right:-18px;top:0;background:radial-gradient(circle at 100% 100%,transparent 17.5px,#000 18px)}
-.home img{width:26px;height:26px;border-radius:7px}
-.foot{left:50%;right:auto;bottom:0;transform:translateX(-50%);width:max-content;max-width:calc(100% - 60px);padding:13px 26px 16px;background:#000;border-radius:22px 22px 0 0;gap:9px}
-.foot::before{left:-18px;bottom:0;background:radial-gradient(circle at 0 0,transparent 17.5px,#000 18px)}
-.foot::after{right:-18px;bottom:0;background:radial-gradient(circle at 100% 0,transparent 17.5px,#000 18px)}
-.cap{font-size:10px;letter-spacing:.18em;color:rgba(255,255,255,.5)}
-.plats{gap:6px}
-.plats a{height:30px;padding:0 12px 0 10px;border-radius:999px;background:#1c1c1e;font-weight:500;color:#fff;transition:background .15s ease}
-.plats a:hover{background:#2c2c2e}
-.plats a[data-me]{background:#fff;color:#000}
-/* the apps Wit works with, as a notch on the right edge: it grows out of a sliver a moment after the page opens */
-.side{position:fixed;z-index:3;right:0;top:50%;display:grid;justify-items:center;gap:12px;padding:16px 10px 16px 12px;background:#000;border-radius:24px 0 0 24px;transform:translateY(-50%);transition:clip-path .7s var(--ns),opacity .3s ease;clip-path:inset(calc(50% - 28px) 0 calc(50% - 28px) calc(100% - 9px) round 9px 0 0 9px)}
-.side.open{clip-path:inset(-20px 0 -20px 0 round 24px 0 0 24px)}
-.side::before{right:0;top:-18px;background:radial-gradient(circle at 0 0,transparent 17.5px,#000 18px)}
-.side::after{right:0;bottom:-18px;background:radial-gradient(circle at 0 100%,transparent 17.5px,#000 18px)}
-.side>*{transition:opacity .4s ease .15s,filter .5s ease .1s,transform .6s var(--ns) .1s}
-.side:not(.open)>*{opacity:0;filter:blur(6px);transform:translateX(14px)}
-.rg{display:grid;justify-items:center;gap:6px;background:none;border:0;padding:0;cursor:default;color:#fff;font:600 10.5px/1 'Geist',ui-sans-serif,system-ui,sans-serif;letter-spacing:-.01em}
-.rg .ring{position:relative;width:40px;height:40px;display:grid;place-items:center}
-.rg svg{position:absolute;inset:0}
-.rg .arc{stroke-dasharray:0 95;transition:stroke-dasharray 1.2s var(--ne)}
-.side.open .rg .arc{stroke-dasharray:94.25 95}
-.side.open .rg:nth-child(2) .arc{transition-delay:.1s}.side.open .rg:nth-child(3) .arc{transition-delay:.2s}.side.open .rg:nth-child(4) .arc{transition-delay:.3s}
-.rg img{width:17px;height:17px;display:block}
-.rg:focus-visible{outline:2px solid #fff;outline-offset:3px;border-radius:12px}
-#pop{position:fixed;z-index:4;left:0;top:0;width:262px;pointer-events:none;opacity:0;filter:blur(6px);transform:translate3d(var(--tx,0),var(--ty,0),0) scale(.97);transition:opacity .18s ease,filter .24s ease,transform .36s var(--ne)}
-#pop.on{opacity:1;filter:none;transform:translate3d(var(--tx,0),var(--ty,0),0)}
-#pop.still{transition:opacity .18s ease,filter .24s ease}
-#pop .box{background:#000;border-radius:18px;padding:14px 15px 13px;box-shadow:0 0 0 1px rgba(255,255,255,.12),0 22px 60px rgba(0,0,0,.6);text-align:left}
-#pop i{position:absolute;right:-9px;top:calc(var(--ay) - 9px);width:10px;height:18px;background:#000;clip-path:polygon(0 0,100% 50%,0 100%)}
-#pop h4{display:flex;align-items:center;gap:8px;margin:0 0 9px;font-size:14.5px;font-weight:600;letter-spacing:-.015em}
-#pop h4 img{width:16px;height:16px}
-#pop p{margin:7px 0 0;font-size:12.5px;line-height:1.45;color:#a1a1a6}
-#pop p b{display:block;color:#fff;font-weight:600;margin-bottom:1px}
-.note{transition:filter .3s ease,opacity .3s ease}
-.note.swap{filter:blur(6px);opacity:0}
-@media (max-width:760px){.side,#pop{display:none}}
-@media (min-width:761px){.apps{display:none}}
-@media (prefers-reduced-motion:reduce){.side,.side>*,#pop,.note{transition:none}}
 @keyframes fade{from{opacity:0}to{opacity:1}}
 @keyframes rise{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
 @media (prefers-reduced-motion:reduce){#art,.rise{animation:none}}
@@ -115,8 +71,8 @@ a:focus-visible{outline:2px solid #fff;outline-offset:3px}
 <div class="layer veil" aria-hidden="true"></div>
 <div class="layer grain" aria-hidden="true"></div>
 
-<a href="/" class="home fil" aria-label="Wit">
-<img src="/assets/mark-film.png" alt="" width="26" height="26">Wit
+<a href="/" class="home" aria-label="Wit">
+<img src="/assets/mark-film.png" alt="" width="30" height="30">
 </a>
 
 <main>
@@ -144,14 +100,7 @@ Open in browser
 </ul>
 </main>
 
-<aside class="side fil" aria-label="Works with">
-<button type="button" class="rg" data-app="Claude" aria-label="Claude: works with Wit"><span class="ring"><svg viewBox="0 0 40 40" aria-hidden="true"><circle cx="20" cy="20" r="15" fill="none" stroke="#3a3a3c" stroke-width="3.4"/><circle class="arc" cx="20" cy="20" r="15" fill="none" stroke="#19f59a" stroke-width="3.4" stroke-linecap="round" transform="rotate(-90 20 20)"/></svg><img src="/assets/glyph-claude.png" alt=""></span>Claude</button>
-<button type="button" class="rg" data-app="Codex" aria-label="Codex: works with Wit"><span class="ring"><svg viewBox="0 0 40 40" aria-hidden="true"><circle cx="20" cy="20" r="15" fill="none" stroke="#3a3a3c" stroke-width="3.4"/><circle class="arc" cx="20" cy="20" r="15" fill="none" stroke="#19f59a" stroke-width="3.4" stroke-linecap="round" transform="rotate(-90 20 20)"/></svg><img src="/assets/glyph-codex.png" alt=""></span>Codex</button>
-<button type="button" class="rg" data-app="ChatGPT" aria-label="ChatGPT: works with Wit"><span class="ring"><svg viewBox="0 0 40 40" aria-hidden="true"><circle cx="20" cy="20" r="15" fill="none" stroke="#3a3a3c" stroke-width="3.4"/><circle class="arc" cx="20" cy="20" r="15" fill="none" stroke="#19f59a" stroke-width="3.4" stroke-linecap="round" transform="rotate(-90 20 20)"/></svg><img src="/assets/glyph-chatgpt.png" alt=""></span>ChatGPT</button>
-<button type="button" class="rg" data-app="Cursor" aria-label="Cursor: works with Wit"><span class="ring"><svg viewBox="0 0 40 40" aria-hidden="true"><circle cx="20" cy="20" r="15" fill="none" stroke="#3a3a3c" stroke-width="3.4"/><circle class="arc" cx="20" cy="20" r="15" fill="none" stroke="#19f59a" stroke-width="3.4" stroke-linecap="round" transform="rotate(-90 20 20)"/></svg><img src="/assets/glyph-cursor.png" alt=""></span>Cursor</button>
-</aside>
-<div id="pop" role="tooltip"><div class="box"></div><i></i></div>
-<div class="foot fil">
+<div class="foot">
 <p class="cap">Available for</p>
 <nav class="plats" aria-label="Downloads">
 <a href="https://github.com/Vorinos/Wit/releases/latest/download/Wit-arm64.dmg" data-os="mac"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 4v11"/><path d="m6.5 10 5.5 5.5 5.5-5.5"/><path d="M5 20h14"/></svg>Apple Silicon</a>
@@ -185,47 +134,6 @@ Open in browser
     var a = e.target.closest && e.target.closest('a[data-os]');
     if (a && FIRST[a.dataset.os]) note.textContent = FIRST[a.dataset.os];
   });
-})();
-</script>
-<script>
-/* The right-hand notch: it opens out of a sliver at the edge, and pointing at an app says how Wit works with it, in a
-   black popover that slides from one to the next. The Download button marks the platform it chose in the bottom notch,
-   and the note under the buttons changes through a short blur. */
-(function () {
-  var APPS = {
-    Claude: [['Claude Desktop', 'Search your record from any Claude chat, and save notes to it.'], ['Claude Code', 'Pulls in past decisions and notes while you code. Its sessions are filed every few minutes.'], ['Your history', 'Bring in your Claude export.']],
-    Codex: [['Terminal, IDE or app', 'Codex can search your record as it works.'], ['Sessions', 'Filed every few minutes while you work.']],
-    ChatGPT: [['Your history', 'Bring in your ChatGPT export, the .zip or conversations.json.'], ['Connector', 'Through developer mode on a paid plan, and a tunnel you run.']],
-    Cursor: [['Agent', 'Lets Cursor’s agent search your notes.']]
-  };
-  var side = document.querySelector('.side'), pop = document.getElementById('pop'), box = pop.firstChild, at = null, t = 0;
-  var reduce = window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches;
-  setTimeout(function () { side.classList.add('open'); }, reduce ? 0 : 1300);
-  side.addEventListener('pointerenter', function () { side.classList.add('open'); });
-  function show(b) {
-    clearTimeout(t); var name = b.dataset.app, rows = APPS[name]; if (!rows) return;
-    var was = pop.classList.contains('on'); if (was && at === b) return;
-    box.innerHTML = ''; var h = document.createElement('h4'), im = document.createElement('img'); im.src = b.querySelector('img').src; im.alt = ''; h.append(im, name); box.append(h);
-    rows.forEach(function (r) { var p = document.createElement('p'), k = document.createElement('b'); k.textContent = r[0]; p.append(k, r[1]); box.append(p); });
-    var rc = b.getBoundingClientRect(), w = pop.offsetWidth, hh = box.offsetHeight, x = rc.left - w - 22, y = Math.max(8, Math.min(innerHeight - hh - 8, rc.top + rc.height / 2 - hh / 2));
-    if (!was) pop.classList.add('still');
-    pop.style.setProperty('--tx', x + 'px'); pop.style.setProperty('--ty', y + 'px'); pop.style.setProperty('--ay', Math.max(18, Math.min(hh - 18, rc.top + 20 - y)) + 'px');
-    if (!was) { void pop.offsetWidth; pop.classList.remove('still'); } else if (box.animate && !reduce) box.animate([{ filter: 'blur(6px)', opacity: .2 }, { filter: 'blur(0)', opacity: 1 }], { duration: 280, easing: 'ease-out' });
-    pop.classList.add('on'); at = b;
-  }
-  function hide() { clearTimeout(t); t = setTimeout(function () { pop.classList.remove('on'); at = null; }, 140); }
-  [].forEach.call(side.querySelectorAll('.rg'), function (b) { b.addEventListener('pointerenter', function () { show(b); }); b.addEventListener('focus', function () { show(b); }); b.addEventListener('pointerleave', hide); b.addEventListener('blur', hide); });
-  /* the platform the Download button chose, lit in the bottom notch */
-  var dl = document.getElementById('dl'), mark = function () { [].forEach.call(document.querySelectorAll('.plats a'), function (a) { if (a.href === dl.href) a.setAttribute('data-me', ''); else a.removeAttribute('data-me'); }); };
-  mark(); setTimeout(mark, 1500);
-  /* the note changes through a blur rather than jumping */
-  var note = document.getElementById('note');
-  note.dataset.was = note.textContent;
-  new MutationObserver(function () {
-    var txt = note.textContent; if (reduce || txt === note.dataset.was || txt === note.dataset.old) return;
-    note.dataset.old = note.dataset.was; note.classList.add('swap'); note.textContent = note.dataset.was;
-    setTimeout(function () { note.dataset.was = txt; note.textContent = txt; note.classList.remove('swap'); }, 220);
-  }).observe(note, { childList: true, characterData: true, subtree: true });
 })();
 </script>
 <script src="/assets/bg-film.js"></script>
