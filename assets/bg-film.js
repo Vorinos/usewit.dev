@@ -1,8 +1,8 @@
 /* The background of usewit.dev: a soap film, the thinnest water there is.
    Its thickness is simulated as a fluid: it drains, so it is black-thin up top (behind the words) and thicker below;
-   the film is drawn once in motion and then holds still; it only moves when the pointer moves through it, slowly and
-   smoothly, and settles again a few seconds later. Each pixel's colour is light interfering with itself across that
-   thickness, worked out over the visible spectrum. WebGL2; without it the page keeps a dark gradient. */
+   thin patches rise as plumes and thick ones sink, all at an unhurried pace, and the pointer stirs it gently. Each
+   pixel's colour is light interfering with itself across that thickness, worked out over the visible spectrum.
+   WebGL2; without it the page keeps a dark gradient. */
 (function () {
   var start = /* Background — "Film".
    A soap film, the thinnest water there is, filling the window. Its colours are not painted on: the film's thickness is
@@ -266,19 +266,17 @@ void main(){
   }, { passive: true });
 
   /* ---------- one step of the film ---------- */
-  /* Two ways of stepping. While the page loads, the film is run for a few seconds with its own currents (drainage,
-     plumes, slow swirls) to give it its shape. After that it has no currents of its own: only the pointer moves it,
-     the film is thick and draggy so the motion is slow and smooth, and it comes to rest a few seconds after. */
-  var SHAPE = { buoy: BUOY, stir: STIR, drag: 0.12, vort: 10.0, low: 1.0, feed: 1.0 };
-  var STILL = { buoy: 0.0, stir: 0.0, drag: 1.3, vort: 2.5, low: 0.0, feed: 0.0 };
-  var DT = 1 / 60, PACE = 0.6, simT = 0;
+  /* The film's own currents: drainage, plumes, slow swirls. It is run for a few seconds while the page loads to give
+     it its shape, then keeps going at PACE of real time, so it drifts rather than churns. */
+  var FLOW = { buoy: BUOY, stir: STIR, drag: 0.12, vort: 10.0, low: 1.0, feed: 1.0 };
+  var DT = 1 / 60, PACE = 0.45, simT = 0;
   function step(M, dt, on) {
     simT += dt;
     var seg = [ptr.ax, ptr.ay, ptr.x, ptr.y];
     ptr.ax = ptr.x; ptr.ay = ptr.y;
-    var vx = ptr.vx * 0.42, vy = ptr.vy * 0.42, m = Math.sqrt(vx * vx + vy * vy);
-    if (m > 1.1) { vx *= 1.1 / m; vy *= 1.1 / m; }                      // never faster than this, however quick the hand
-    ptr.sx += (vx - ptr.sx) * 0.18; ptr.sy += (vy - ptr.sy) * 0.18;      // and eased in
+    var vx = ptr.vx * 0.2, vy = ptr.vy * 0.2, m = Math.sqrt(vx * vx + vy * vy);   // the film follows the hand only a little
+    if (m > 0.5) { vx *= 0.5 / m; vy *= 0.5 / m; }                      // and never faster than this, however quick the hand
+    ptr.sx += (vx - ptr.sx) * 0.1; ptr.sy += (vy - ptr.sy) * 0.1;        // eased in and out
     draw(FORCE, vel.w, function (u, tex) { tex('uVel', vel.r.tex); tex('uThick', thick.r.tex); gl.uniform1f(u.uT, simT); gl.uniform1f(u.uDt, dt); gl.uniform1f(u.uAspect, aspect);
       gl.uniform1f(u.uBuoy, M.buoy); gl.uniform1f(u.uStir, M.stir); gl.uniform1f(u.uK, THICK); gl.uniform1f(u.uDrag, M.drag); gl.uniform1f(u.uOn, on);
       gl.uniform4f(u.uSeg, seg[0], seg[1], seg[2], seg[3]); gl.uniform2f(u.uPV, ptr.sx, ptr.sy); }); vel.swap();
@@ -301,10 +299,9 @@ void main(){
   draw(SPECTRUM, spec, function () {});
   layout();
   if (window.ResizeObserver) (ro = new ResizeObserver(function () { layout(); paint(); })).observe(cv);
-  for (var w = 0; w < WARM; w++) step(SHAPE, DT, 0);      // give the film its shape, then hold it there
+  for (var w = 0; w < WARM; w++) step(FLOW, DT, 0);       // give the film its shape before it is first seen
   paint();
   if (reduce) return stop;
-  var SETTLE = 3200, EASE = 900;                         // ms it keeps moving after the pointer stops, then eases to rest
   var last = performance.now(), acc = 0, slow = 0, seen = 0;
   (function tick(now) {
     if (dead) return;
@@ -312,13 +309,10 @@ void main(){
     var dt = now - last; last = now;
     if (document.hidden || !visible) return;
     var since = now - lastMove;
-    if (since > SETTLE + EASE) { acc = 0; return; }      // at rest: nothing to draw
-    var pace = since < SETTLE ? 1 : 1 - (since - SETTLE) / EASE;
-    pace = pace * pace * (3 - 2 * pace);
     var on = Math.max(0, 1 - since / 120);               // the brush only acts while the pointer is actually moving
     if (++seen > 30 && level < LEVELS.length - 1) { slow = slow * 0.95 + (dt > 24 ? 1 : 0) * 0.05; if (slow > 0.5) { level++; slow = 0; seen = 0; layout(); } }
     acc += Math.min(0.1, dt / 1000);
-    var n = 0; while (acc >= DT && n < 2) { step(STILL, DT * PACE * pace, on); acc -= DT; n++; }
+    var n = 0; while (acc >= DT && n < 2) { step(FLOW, DT * PACE, on); acc -= DT; n++; }
     if (n === 2) acc = 0;
     if (since > 120) { ptr.vx *= 0.8; ptr.vy *= 0.8; }
     paint();
