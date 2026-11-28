@@ -4317,7 +4317,8 @@ function setTheme(id, quiet) {
 }
 const GLASS_OPTS = [['clear', 'Clear', 'Your desktop shows through, softly blurred, with a very fine grain.'], ['frosted', 'Frosted', 'A denser blur, so less of the desktop comes through.'], ['solid', 'Solid', 'Nothing shows through. The theme fills the window.']];
 const LOOKS = [['black', 'Black', 'Pure black that grows out of the window’s edges: rings for amounts, popovers that point, and a liquid shimmer when something changes.'], ['flat', 'Flat', 'Black and flat in Apple’s colours, with Manrope type and a light that moves in the Ask box.'], ['classic', 'Classic', 'The original look. The theme fills the window.']];
-function curLook() { const q = (location.search.match(/[?&]look=(black|flat|classic)/) || [])[1]; if (q) return q; try { return localStorage.getItem('wit.look') || 'black'; } catch (e) { return 'black'; } }
+/* a style saved before Black existed (when Flat was the default, and choosing it was the only way to say so) is set aside once, so everyone meets Black; a choice made after that sticks */
+function curLook() { const q = (location.search.match(/[?&]look=(black|flat|classic)/) || [])[1]; if (q) return q; try { if (localStorage.getItem('wit.lookv') !== '2') { localStorage.removeItem('wit.look'); localStorage.setItem('wit.lookv', '2'); } return localStorage.getItem('wit.look') || 'black'; } catch (e) { return 'black'; } }
 function applyLook(id) {
   const nx = id === 'black', on = nx || id === 'flat', b = document.body; b.classList.toggle('jv', on); b.classList.toggle('nx', nx);
   /* Black is always solid: on a Mac the see-through window is set aside, and only what the window needs from it is kept */
