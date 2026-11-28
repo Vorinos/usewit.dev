@@ -1144,6 +1144,80 @@ body.mac :is(button,input,select,textarea,a,label,.pop,.dlg,canvas#stars,#npop){
 body.nx.jv #tip{z-index:4}
 body.nx.jv #start{z-index:6}
 @media (prefers-reduced-motion:reduce){ .wv-sheen{display:none} }
+/* the properties panel in Black: tabs in its head, a card for what is on the sheet, views as rings, settings in groups */
+#ptabs{display:none}
+body.nx.jv .phead{padding:0 10px 0 12px;gap:8px}
+body.nx.jv:not(.reading) #ptabs{display:grid;flex:1;background:var(--n2);border-radius:999px;padding:3px}
+body.nx.jv:not(.reading) #propsTitle{display:none}
+body.nx.jv #ptabs button{height:28px;border-radius:999px;font-size:13px}
+body.nx.jv #propsBody .sec{margin:22px 0 9px 2px}
+body.nx.jv #propsBody .sec:first-child{margin-top:8px}
+body.nx.jv .pnow{display:grid;grid-template-columns:52px minmax(0,1fr);gap:14px;align-items:center;background:var(--n2);border-radius:20px;padding:14px 16px 14px 14px;margin:8px 0 2px}
+body.nx.jv .pnow .tx b{display:block;font-size:16px;font-weight:700;letter-spacing:-.02em}
+body.nx.jv .pnow .tx span{display:block;color:var(--ink2);font-size:12.5px;line-height:1.4;margin-top:3px;text-wrap:pretty}
+body.nx.jv :is(.pnow,.tile) .ring{position:relative;display:grid;place-items:center;width:40px;height:40px}
+body.nx.jv .pnow .ring{width:52px;height:52px}
+body.nx.jv :is(.pnow,.tile) .ring>svg{position:absolute;inset:0;width:100%;height:100%}
+body.nx.jv :is(.pnow,.tile) .gl svg{display:block}
+body.nx.jv :is(.pnow,.tile) .gl{position:relative;display:grid;color:#fff}
+body.nx.jv .tiles{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:2px;margin:0 -6px}
+body.nx.jv .tile{display:grid;justify-items:center;gap:7px;padding:9px 0 10px;border-radius:16px;color:var(--ink2);transition:background .15s,color .15s,transform .25s var(--ns)}
+body.nx.jv .tile:hover{background:rgba(255,255,255,.06);color:#fff}
+body.nx.jv .tile:active{transform:scale(.94)}
+body.nx.jv .tile[aria-pressed="true"]{color:#fff}
+body.nx.jv .tile .arc{transition:stroke-dasharray .8s var(--ne)}
+body.nx.jv .tile:not([aria-pressed="true"]) .arc{opacity:0}
+#npop .q{margin:0;color:#a1a1a6;line-height:1.45;font-size:12.5px}
+#npop h4 .gl{display:grid;color:#fff}
+body.nx.jv .tile:not([aria-pressed="true"]):hover .ring circle:first-child{stroke:#3a3a3c}
+body.nx.jv .tile .tl{font-size:11.5px;font-weight:600;letter-spacing:-.01em;white-space:nowrap}
+body.nx.jv .pcard{background:var(--n2);border-radius:18px;padding:0 14px;margin:0 0 4px}
+body.nx.jv .pcard .prow{min-height:48px;margin:0;grid-template-columns:minmax(0,1fr) auto;gap:12px}
+body.nx.jv .pcard .prow+.prow,body.nx.jv .pcard .pmix+.prow{border-top:1px solid rgba(255,255,255,.07)}
+body.nx.jv .pcard .prow>label{color:#fff;font-weight:500;font-size:13.5px}
+body.nx.jv .pcard .prow.sub>label{color:var(--ink2);padding-left:12px}
+body.nx.jv .pcard select{width:auto;min-width:132px;max-width:168px;height:32px;padding-right:30px;background-color:var(--n3)}
+body.nx.jv .pcard .seg{min-width:150px;background:var(--n3)}
+body.nx.jv .pcard .seg button[aria-pressed="true"]{background:#5a5a5e}
+body.nx.jv .pcard .sl{width:156px}
+body.nx.jv #props .sl{height:30px;background:none;border-radius:0;overflow:visible;--tw:calc(100% - 46px)}
+body.nx.jv #props .sl::before{content:"";position:absolute;left:0;top:13px;height:4px;width:var(--tw);border-radius:2px;background:var(--n4)}
+body.nx.jv #props .sl i{top:13px;bottom:auto;height:4px;width:calc(var(--tw) * var(--f,.5));background:#fff;border-radius:2px}
+body.nx.jv #props .sl i::after{content:"";position:absolute;right:-8px;top:-6px;width:16px;height:16px;border-radius:50%;background:#fff;box-shadow:0 1px 6px rgba(0,0,0,.55);transition:transform .2s var(--ns)}
+body.nx.jv #props .sl:active i::after{transform:scale(1.18)}
+body.nx.jv #props .sl input{width:var(--tw)}
+body.nx.jv #props .sl output{right:0;line-height:30px;color:#fff;font-weight:600;font-size:12px;font-variant-numeric:tabular-nums}
+body.nx.jv #props .sl:focus-within{outline:0}
+body.nx.jv #props .sl:focus-within i::after{box-shadow:0 0 0 3px rgba(106,174,255,.7)}
+body.nx.jv .pmix{padding:10px 0 12px}
+body.nx.jv #props .pmix .sl{--tw:100%;height:44px;width:100%}
+body.nx.jv #props .pmix .sl::before,body.nx.jv #props .pmix .sl i{top:31px}
+body.nx.jv #props .pmix .sl input{top:18px;height:26px}
+body.nx.jv #props .pmix .sl .ends{inset:0 0 auto 0;height:22px;padding:0;color:var(--ink2);font-size:12.5px;font-weight:600;mix-blend-mode:normal}
+body.nx.jv #props .pmix .sl .ends span{color:var(--ink2)}
+body.nx.jv .ppal{display:grid;gap:6px}
+body.nx.jv .ppal button{display:grid;grid-template-columns:76px minmax(0,1fr);align-items:center;gap:12px;height:44px;padding:0 14px;border-radius:16px;background:var(--n2);font-weight:600;text-align:left;transition:background .15s,box-shadow .2s}
+body.nx.jv .ppal button:hover{background:var(--n3)}
+body.nx.jv .ppal button[aria-checked="true"]{background:var(--n3);box-shadow:inset 0 0 0 2px #fff}
+body.nx.jv .ppal i{display:block;height:10px;border-radius:5px}
+body.nx.jv #propsBody>.seg{background:var(--n2)}
+body.nx.jv #propsBody .link{display:inline-flex;align-items:center;height:30px;margin-top:8px;padding:0 13px;border-radius:999px;background:var(--n2);color:#fff;font-weight:600;font-size:12.5px;text-decoration:none}
+body.nx.jv #propsBody .link:hover{background:var(--n3)}
+body.nx.jv #propsBody .chips.saved{margin:0 0 2px}
+/* the reader, in the same groups */
+body.nx.jv #entryBody .tags{margin:2px 0 14px}
+body.nx.jv #entryBody .body{font-size:14.5px;line-height:1.62;margin-bottom:12px}
+body.nx.jv #entryBody details{border:0;background:var(--n2);border-radius:18px;padding:0 14px;margin:8px 0 0}
+body.nx.jv #entryBody summary{display:flex;align-items:center;justify-content:space-between;padding:14px 0;font-size:13.5px;font-weight:600;color:#fff}
+body.nx.jv #entryBody summary::after{content:"";width:7px;height:7px;margin:0 3px 3px 0;border-right:1.8px solid var(--ink3);border-bottom:1.8px solid var(--ink3);transform:rotate(45deg);transition:transform .3s var(--ne)}
+body.nx.jv #entryBody details[open] summary::after{content:"";margin-bottom:-3px;transform:rotate(225deg)}
+body.nx.jv #entryBody .kv{gap:0 14px;padding-bottom:4px;font-size:13px}
+body.nx.jv #entryBody .kv>*{padding:9px 0;border-top:1px solid rgba(255,255,255,.07)}
+body.nx.jv #entryBody .kv b{border-bottom:0;font-weight:600;justify-self:stretch;text-align:right}
+body.nx.jv #entryBody .lk{padding:10px 0;border-top:1px solid rgba(255,255,255,.07);font-weight:500;font-size:13px}
+body.nx.jv #entryBody .lk:hover{text-decoration:none;color:var(--ng)}
+body.nx.jv #entryBody details>.fine{padding-top:4px}
+body.nx.jv #entryBody .nav2{margin-top:14px}
 body.nx.jv .okmark{display:grid;place-items:center;width:44px;height:44px;border-radius:50%;background:var(--ng) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath d='M4.4 8.3l2.4 2.4 4.9-5.2' fill='none' stroke='%23000' stroke-width='1.7' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") center/26px no-repeat;box-shadow:0 0 0 6px rgba(25,245,154,.14),0 0 40px rgba(25,245,154,.35);animation:pop .5s var(--ns)}
 
 </style>
@@ -3495,7 +3569,7 @@ function pselect(opts, val, on) {                         // opts: [[value, labe
 }
 function pslider(val, min, max, step, fmt, on, ends) {
   const inp = h('input', { type: 'range', min, max, step, value: val }), out = h('output'), el = h('label', { class: 'sl' }, h('i'), ends ? h('span', { class: 'ends' }, h('span', { text: ends[0] }), h('span', { text: ends[1] })) : out, inp);
-  const sync = () => { el.style.setProperty('--v', ((inp.value - min) / (max - min) * 100).toFixed(1) + '%'); out.textContent = fmt(+inp.value); };
+  const sync = () => { el.style.setProperty('--v', ((inp.value - min) / (max - min) * 100).toFixed(1) + '%'); el.style.setProperty('--f', ((inp.value - min) / (max - min)).toFixed(4)); out.textContent = fmt(+inp.value); };
   inp.addEventListener('input', () => { sync(); on(+inp.value); }); sync(); return el;
 }
 function ptoggle(val, on, label) { const b = h('button', { type: 'button', class: 'tg', role: 'switch', 'aria-checked': String(!!val), 'aria-label': label }); b.addEventListener('click', () => { const v = b.getAttribute('aria-checked') !== 'true'; b.setAttribute('aria-checked', String(v)); on(v); }); return b; }
@@ -3503,6 +3577,128 @@ function pseg(opts, val, on) { const el = h('div', { class: 'seg' }); for (const
 function pchips(opts, val, on) { const el = h('div', { class: 'chips' }); for (const [v, l] of opts) el.append(h('button', { type: 'button', class: 'chip', 'aria-pressed': String(v === val), text: l, onclick: () => on(v) })); return el; }
 const fieldOpts = none => Store.FIELDS.filter(f => none || f.id !== 'none').map(f => [f.id, f.id === 'none' ? 'Nothing' : f.label, f.group || ' ']);
 const ORDERS = [['date', 'Date'], ['name', 'Name'], ['count', 'Count']];
+
+/* ---------- Properties in the Black look: three tabs instead of one long list, a card saying what is on the sheet,
+   the views as rings with a drawing of each, and every setting in a rounded group of rows ---------- */
+const VIEW_GLYPH = {
+  stream: 'M3 8.5c3-3 6 2.5 9 0s6-3 9 0M3 13c3-2.5 6 2.5 9 0s6-2.5 9 0M3 17.5c3-2 6 2 9 0s6-2 9 0',
+  flow: 'M3 6.5h3.5c5.5 0 5.5 11 11 11H21M3 17.5h3.5c5.5 0 5.5-11 11-11H21M3 12h18',
+  chord: 'M12 3a9 9 0 1 0 0 18a9 9 0 1 0 0-18M5.6 7.6C10 11 14 11 18.4 7.6M7.4 19.8C9.5 14 14.5 14 16.6 19.8',
+  clock: 'M12 3a9 9 0 1 0 0 18a9 9 0 1 0 0-18M12 7v5l3.5 2',
+  calendar: 'M4.5 6.5a2 2 0 0 1 2-2h11a2 2 0 0 1 2 2v11a2 2 0 0 1-2 2h-11a2 2 0 0 1-2-2zM4.5 9.5h15M8.5 13h.01M12 13h.01M15.5 13h.01M8.5 16.3h.01M12 16.3h.01',
+  returns: 'M19.5 12a7.5 7.5 0 1 1-2.2-5.3M19.8 4.2v3.6h-3.6',
+  lifelines: 'M4 7h9M8 12h12M4 17h6M13 7a.01.01 0 1 0 0 .01M20 12a.01.01 0 1 0 0 .01M10 17a.01.01 0 1 0 0 .01',
+  balance: 'M12 4.5V20M7.5 20h9M5 7.5h14M5 7.5 2.8 13h4.4zM19 7.5 16.8 13h4.4z',
+  waves: 'M2.5 18.5c3.2 0 4-11 7-11s3.8 11 7 11M9 18.5c3 0 4-6.5 6.8-6.5s3.5 6.5 5.7 6.5',
+  columns: 'M5 20v-6M10 20V9M15 20v-8M20 20V5M3.5 20h18',
+  bars: 'M4 5.5h13M4 10.2h16M4 14.8h9M4 19.5h6',
+  ranks: 'M3 7h4l5 10h4l5-10M3 17h4l5-10h4l5 10',
+  quiet: 'M9 6.5a5.5 5.5 0 1 0 0 11a5.5 5.5 0 1 0 0-11M17.5 9.5a2.5 2.5 0 1 0 0 5a2.5 2.5 0 1 0 0-5',
+  grid: 'M5 5h.01M12 5h.01M19 5h.01M5 12h.01M12 12h.01M19 12h.01M5 19h.01M12 19h.01M19 19h.01',
+  ribbon: 'M3 8.5c4.5 0 4.5 7 9 7s4.5-7 9-7M3 15.5c4.5 0 4.5-7 9-7s4.5 7 9 7',
+  wheel: 'M12 3a9 9 0 1 0 0 18a9 9 0 1 0 0-18M12 3v18M3 12h18M5.6 5.6l12.8 12.8M18.4 5.6 5.6 18.4',
+  spheres: 'M8 9.5a4.5 4.5 0 1 0 0 9a4.5 4.5 0 1 0 0-9M16.5 4.5a3 3 0 1 0 0 6a3 3 0 1 0 0-6M17 14.5a2.2 2.2 0 1 0 0 4.4a2.2 2.2 0 1 0 0-4.4',
+  shells: 'M3 19.5a9 9 0 0 1 18 0M7 19.5a5 5 0 0 1 10 0M10.5 19.5a1.5 1.5 0 0 1 3 0',
+  clusters: 'M6 7h.01M8.5 9.5h.01M5 11h.01M16 5.5h.01M18.5 8h.01M15 9h.01M11 16h.01M14 18.5h.01M9.5 19h.01M13 14.2h.01',
+  folders: 'M3.5 7a2 2 0 0 1 2-2h4l2 2.2h7a2 2 0 0 1 2 2V17a2 2 0 0 1-2 2h-13a2 2 0 0 1-2-2z'
+};
+function glyphSvg(id, size) {
+  const d = VIEW_GLYPH[id], w = h('span', { class: 'gl' });
+  if (id === 'brain') w.innerHTML = '<svg viewBox="0 0 24 24" width="' + size + '" height="' + size + '" aria-hidden="true"><use href="#n-brain"/></svg>';
+  else w.innerHTML = '<svg viewBox="0 0 24 24" width="' + size + '" height="' + size + '" aria-hidden="true"><path d="' + d + '" fill="none" stroke="currentColor" stroke-width="' + (/h\.01/.test(d) ? 3.2 : 1.8) + '" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+  return w;
+}
+const SHAPE_SAYS = { brain: 'Notes on the brain, the record on the nerves and muscles.', grid: 'Entries laid out across and down.', ribbon: 'A ribbon of entries, across and down.', wheel: 'Wedges around a centre, in rings.', spheres: 'A sphere for each group, in bands.', shells: 'Sectors in shells around a centre.', clusters: 'Entries pulled into clusters, in 2D or 3D.', folders: 'Your folders, as boxes or a tree.' };
+/* a view as a ring with its drawing inside, the chosen one ringed in green */
+function ptiles(opts, val, on, cls) {
+  const el = h('div', { class: 'tiles' + (cls ? ' ' + cls : '') });
+  for (const [v, l] of opts) {
+    const on1 = v === val, r = h('span', { class: 'ring' });
+    r.innerHTML = '<svg viewBox="0 0 40 40" aria-hidden="true"><circle cx="20" cy="20" r="17.5" fill="none" stroke="#2c2c2e" stroke-width="2.6"/><circle class="arc" cx="20" cy="20" r="17.5" fill="none" stroke="#19f59a" stroke-width="2.6" stroke-linecap="round" stroke-dasharray="' + (on1 ? '110 110' : '0 110') + '" transform="rotate(-90 20 20)"/></svg>';
+    r.append(glyphSvg(v, 18));
+    const b = h('button', { type: 'button', class: 'tile', 'aria-pressed': String(on1), onclick: () => on(v) }, r, h('span', { class: 'tl', text: l }));
+    const says = ANSWER[v] ? ANSWER[v].q : SHAPE_SAYS[v];
+    if (says && typeof Nx === 'object' && Nx) Nx.hover(b, bx => { bx.append(h('h4', null, glyphSvg(v, 16), l), h('p', { class: 'q', text: says })); }, 'left');
+    el.append(b);
+  }
+  return el;
+}
+const pcard = (...rows) => h('div', { class: 'pcard' }, ...rows.flat().filter(Boolean));
+const PTABS = [['view', 'View'], ['colour', 'Colour'], ['motion', 'Motion']];
+function ptab() { try { const t = localStorage.getItem('wit.ptab'); if (PTABS.some(p => p[0] === t)) return t; } catch (e) { /* none kept */ } return 'view'; }
+function ptabsBar() {
+  let bar = $('#ptabs'); if (!bar) { bar = h('div', { id: 'ptabs', class: 'seg', role: 'tablist', 'aria-label': 'Properties' }); $('.phead').insertBefore(bar, $('#propsClose')); }
+  const cur0 = ptab(); bar.textContent = '';
+  PTABS.forEach(([id, name]) => bar.append(h('button', { type: 'button', role: 'tab', 'aria-selected': String(id === cur0), 'aria-pressed': String(id === cur0), text: name, onclick: () => {
+    if (id === ptab()) return; const before = PTABS.findIndex(p => p[0] === ptab()), after = PTABS.findIndex(p => p[0] === id);
+    try { localStorage.setItem('wit.ptab', id); } catch (e) { /* kept for this visit only */ } ptabsBar(); propSig = ''; renderProps(); $('#propsBody').scrollTop = 0;
+    const b = $('#propsBody'); if (b.animate && !REDUCED) b.animate([{ opacity: 0, filter: 'blur(6px)', transform: 'translateX(' + (after > before ? 18 : -18) + 'px)' }, { opacity: 1, filter: 'blur(0)', transform: 'none' }], { duration: 340, easing: 'cubic-bezier(.32,.72,0,1)' });
+  } })));
+}
+function renderPropsNx(el) {
+  const an = ANSWER[cur.form], isBrain = cur.form === 'brain', isForm = !isBrain && !an, ax = an ? an.ax : FORM_AX[cur.form] || ['', ''], tab = ptab();
+  const sec = t => el.append(h('p', { class: 'sec', text: t }));
+  ptabsBar();
+  if (tab === 'view') {
+    /* what is on the sheet now */
+    const nowId = isBrain ? 'brain' : cur.form, r = h('span', { class: 'ring big' });
+    r.innerHTML = '<svg viewBox="0 0 40 40" aria-hidden="true"><circle cx="20" cy="20" r="17.5" fill="none" stroke="#2c2c2e" stroke-width="2.4"/><circle class="arc" cx="20" cy="20" r="17.5" fill="none" stroke="#19f59a" stroke-width="2.4" stroke-linecap="round" stroke-dasharray="110 110" transform="rotate(-90 20 20)"/></svg>'; r.append(glyphSvg(nowId, 22));
+    const what = isBrain ? (S.records && S.notes ? 'Notes on the brain, the record on the nerves and muscles.' : 'The record, drawn on the figure.') : an ? an.q : (Store.FIELD[cur.a] ? 'By ' + Store.FIELD[cur.a].label.toLowerCase() + (cur.b !== 'none' && Store.FIELD[cur.b] ? ', then ' + Store.FIELD[cur.b].label.toLowerCase() : '') + '.' : '');
+    el.append(h('div', { class: 'pnow' }, r, h('div', { class: 'tx' }, h('b', { text: formName(nowId) }), h('span', { text: what }))));
+    sec('Views');
+    el.append(ptiles([['brain', 'Anatomy']].concat(ANSWERS.map(a => [a.id, a.name])), isForm ? '' : cur.form, id => { if (id === 'brain') show({ form: 'brain' }); else { const a = ANSWER[id]; show({ form: id, mode: 'table', a: a.a, ao: 'date', b: a.b, bo: a.bo || 'count', blend: 1 }); } }));
+    sec('Shapes');
+    el.append(ptiles(FORMS, isForm ? cur.form : '', id => show(Object.assign({ form: id, blend: 1 }, an || isBrain ? { mode: cur.b === 'none' ? 'groups' : 'table' } : {}))));
+    const extra = [];
+    if (cur.form === 'clusters') extra.push(prow('Depth', pseg([[false, '2D'], [true, '3D']], cur.d3, v => show({ d3: v }))), prow('Scatter', ptoggle(cur.scatter, v => show({ scatter: v }), 'Scatter')));
+    if (cur.form === 'folders') extra.push(prow('Drawn as', pseg([[true, 'Boxes'], [false, 'Tree']], cur.boxes, v => show({ boxes: v }, { fx: true }))));
+    if (cur.form === 'waves') {
+      extra.push(prow('Scale', pselect([['lin', 'Linear'], ['log', 'Log']], cur.scale, v => show({ scale: v }))), prow('Smoothing', pselect([['none', 'None'], ['ema', 'Exponential average']], cur.smooth, v => show({ smooth: v }))));
+      if (cur.smooth === 'ema') extra.push(prow('Window', pselect([[30, '30 days'], [90, '90 days'], [180, '180 days']], cur.win, v => show({ win: +v }))));
+      extra.push(prow('Own peaks', ptoggle(cur.own, v => show({ own: v }), 'Each to its own peak')));
+    }
+    if (isForm) extra.push(prow('Layout', pseg([['groups', 'Groups'], ['table', 'Table']], cur.mode, v => show(v === 'groups' ? { mode: v, b: 'none' } : { mode: v, b: cur.b === 'none' ? (cur.a === 'space' ? 'year' : 'space') : cur.b }))));
+    if (extra.length) el.append(pcard(extra));
+    sec('Arrangement');
+    const target = isBrain ? st.lastForm : cur.form, rows = [h('div', { class: 'pmix' }, pslider(isBrain ? 0 : cur.blend, 0, 1, 0.01, v => '', v => { if (v <= 0.005) show({ form: 'brain', blend: 1 }, { dur: 0.25, fx: false }); else show({ form: target, blend: v >= 0.995 ? 1 : v }, { dur: 0.25, fx: false }); }, ['Anatomy', formName(target)]))];
+    if (isBrain || cur.blend < 0.999) rows.push(prow('Order', pselect([['old', 'Oldest first'], ['new', 'Newest first'], ['group', 'Group by group']], cur.order, v => show({ order: v }, { fx: true }))));
+    el.append(pcard(rows));
+    if (!isBrain && cur.form !== 'folders' && cur.form !== 'calendar') {
+      sec('Axes');
+      const two = cur.mode === 'table' || !!an, rs = [prow(two ? ax[0] || 'First' : 'Group by', pselect(fieldOpts(false), cur.a, v => show({ a: v }))), prow('Order', pselect(ORDERS, cur.ao, v => show({ ao: v })), true)];
+      if (two) rs.push(prow(ax[1] || 'Second', pselect(fieldOpts(true), cur.b, v => show({ b: v }))), prow('Order', pselect(ORDERS, cur.bo, v => show({ bo: v })), true));
+      el.append(pcard(rs));
+      if (two) el.append(h('button', { type: 'button', class: 'link', text: 'Swap ' + (ax[0] || 'first').toLowerCase() + ' and ' + (ax[1] || 'second').toLowerCase(), onclick: () => show({ a: cur.b === 'none' ? cur.a : cur.b, b: cur.b === 'none' ? cur.b : cur.a, ao: cur.bo, bo: cur.ao }) }));
+      el.append(h('p', { class: 'fine', style: { marginTop: '8px' }, text: 'Only ' + fmtDate(S.t0) + ' to ' + fmtDate(S.t1) + ', the time this record covers.' }));
+    }
+    exploreProps(el, sec, 'top');
+  } else if (tab === 'colour') {
+    sec('Colour by');
+    el.append(pcard(prow('Colour', pselect(fieldOpts(true), cur.colorBy, v => show({ colorBy: v }))), an && (cur.form === 'bars' || cur.form === 'columns') ? prow('Size', pselect([['length', 'Length'], ['entries', 'Entries']], cur.size, v => show({ size: v }))) : null));
+    sec('Colours');
+    const pal = h('div', { class: 'ppal', role: 'radiogroup', 'aria-label': 'Colours' });
+    PALETTES.forEach(([id, name]) => { const strip = h('i'); try { const cs = Store.fieldColours('space', theme(), id).slice(0, 10).map(cssCol); strip.style.background = 'linear-gradient(90deg,' + cs.map((c, k) => c + ' ' + (k * 10) + '% ' + ((k + 1) * 10) + '%').join(',') + ')'; } catch (e) { /* drawn plain */ } pal.append(h('button', { type: 'button', role: 'radio', 'aria-checked': String(id === cur.palette), onclick: () => show({ palette: id }) }, h('span', { text: name }), strip)); });
+    el.append(pal);
+    sec('What shows');
+    const ts = [prow('Notes', ptoggle(cur.showN, v => show({ showN: v || !cur.showR, showR: cur.showR || !v }), 'Notes')), prow('Record', ptoggle(cur.showR, v => show({ showR: v || !cur.showN, showN: cur.showN || !v }), 'Record'))];
+    if (!isBrain && S.notes && S.records) ts.push(prow('Split', ptoggle(cur.split, v => show({ split: v }, { fx: true }), 'Notes above, the record below')));
+    ts.push(prow('Hide unsorted', ptoggle(cur.hideUn, v => show({ hideUn: v }), 'Hide unsorted')), prow('Counts', ptoggle(cur.counts, v => show({ counts: v }), 'Counts')));
+    el.append(pcard(ts));
+    sec('Labels');
+    el.append(pseg([['auto', 'Automatic'], ['all', 'All'], ['none', 'None']], st.labels, v => { st.labels = v; propSig = ''; renderProps(); }));
+  } else {
+    sec('Motion');
+    el.append(pcard(prow('Turning', ptoggle(st.turning, v => { st.turning = v; }, 'Turning')), prow('Speed', pslider(st.speed, 0.2, 3, 0.05, v => v.toFixed(2) + '×', v => { st.speed = v; })), prow('Limit rotation', ptoggle(st.limit, v => { st.limit = v; refit(true); }, 'Limit rotation'))));
+    sec('While it changes');
+    el.append(pcard(prow('Tracking boxes', ptoggle(st.track, v => { st.track = v; if (!v) Hud.clear(); }, 'Tracking boxes')), prow('Read-out', ptoggle(st.chars, v => { st.chars = v; }, 'Characters while the shape changes'))));
+    const tmp = h('div'); exploreProps(tmp, t => tmp.append(h('p', { class: 'sec', text: t })), 'drawn');
+    const kids = Array.from(tmp.children), head = kids.filter(k => k.classList.contains('sec')), rows = kids.filter(k => k.classList.contains('prow')), notes = kids.filter(k => !k.classList.contains('sec') && !k.classList.contains('prow'));
+    head.forEach(k => el.append(k)); if (rows.length) el.append(pcard(rows)); notes.forEach(k => el.append(k));
+    sec('Drawn');
+    el.append(pcard(prow('Links', pslider(st.links, 0, 1, 0.01, v => Math.round(v * 100) + '%', v => { const was = st.links; st.links = v; if ((was < 0.01) !== (v < 0.01)) buildLinks(); })), prow('Scaffold', pslider(st.scaffold, 0, 2, 0.01, v => Math.round(v * 100) + '%', v => { st.scaffold = v; })), prow('Point size', pslider(st.pointSize, 0.5, 2.5, 0.01, v => v.toFixed(1) + '×', v => { st.pointSize = v; })), prow('Glare', pslider(st.glare, 0, 1.6, 0.01, v => Math.round(v * 100) + '%', v => { st.glare = v; }))));
+    el.append(h('p', { class: 'fine', style: { marginTop: '16px' }, text: 'The figure is ' + fmtN(Anatomy.structures) + ' named structures of a real body (brain, nerves and muscles), from Z-Anatomy and BodyParts3D (CC BY-SA 4.0).' }));
+  }
+}
 
 /* ---------- Properties ---------- */
 let propSig = '';
@@ -3512,6 +3708,7 @@ function renderProps() {
   if (sig === propSig) return; propSig = sig;
   const keep = el.scrollTop, an = ANSWER[cur.form], isBrain = cur.form === 'brain', isForm = !isBrain && !an, ax = an ? an.ax : FORM_AX[cur.form] || ['', ''];
   el.textContent = '';
+  if (document.body.classList.contains('nx')) { renderPropsNx(el); el.scrollTop = keep; return; }
   const sec = t => el.append(h('p', { class: 'sec', text: t }));
   sec('Presets');
   el.append(pchips([['brain', 'Anatomy']].concat(ANSWERS.map(a => [a.id, a.name])), isForm ? '' : cur.form, id => { if (id === 'brain') show({ form: 'brain' }); else { const a = ANSWER[id]; show({ form: id, mode: 'table', a: a.a, ao: 'date', b: a.b, bo: a.bo || 'count', blend: 1 }); } }));
@@ -5702,7 +5899,7 @@ var Nx = (function () {
     wireTips(yes); syncToggle();
     if (!yes) { hidePop(0); const m = $('#recordMenu'); if (m && m.parentNode === document.body) $('#recordBtn').after(m); }
     settle();
-    try { if (S.rec) { renderSpaces(); renderStatus(); if (typeof drawStars === 'function') drawStars(); } } catch (e) { /* not drawn yet */ }
+    try { if (S.rec) { renderSpaces(); renderStatus(); propSig = ''; renderProps(); if (typeof drawStars === 'function') drawStars(); } } catch (e) { /* not drawn yet */ }
   }
   return { on, ring, pct, spaces, showPop, hidePop, hover, propsShown, setProps, settle, syncToggle, toast: toastNx, look };
 })();
