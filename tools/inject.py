@@ -35,7 +35,7 @@ INSTALL = '''<script>
     var pills = document.querySelector('#mid .bar .pills');
     if (!pills || document.getElementById('installBtn')) return;
     var b = document.createElement('button');
-    b.className = 'pill'; b.type = 'button'; b.id = 'installBtn'; b.title = 'Install Wit as an app on this device. Your notes stay on it.';
+    b.className = 'pill solid'; b.type = 'button'; b.id = 'installBtn'; b.title = 'Install Wit as an app on this device. Your notes stay on it.';
     b.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 4v10"/><path d="m7.5 10 4.5 4.5 4.5-4.5"/><path d="M5 15v3a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-3"/></svg><span>Install</span>';
     b.addEventListener('click', function () { if (!offer) return; offer.prompt(); offer.userChoice.then(function () { offer = null; b.remove(); }); });
     pills.prepend(b);

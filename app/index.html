@@ -843,6 +843,309 @@ body.vib.jv[data-glass="frosted"]:not([data-theme="original"]) #view::before{opa
 #stars:focus,#stars:focus-visible{outline:0;box-shadow:none}
 @media (max-height:780px){#stars{height:160px}}
 @media (max-height:690px){#stars{height:132px}}
+/* ---------- Black: the look of a notch ----------
+   The chrome is pure black and fused to the window's edges. The sheet is a rounded opening cut in it (#frame), so
+   wherever black meets the sheet the corner curves inward. Panels grow out of their own edge: the opening slides back
+   and their contents come in out of a short blur. Amounts are rings, popovers point at what they describe, and when
+   something changes state it passes through a short liquid shimmer (Wave). The chrome stays black on every theme;
+   only the sheet takes the theme's ground. */
+#frame,#sideTab,#propsTab,#ntip,#npop{display:none}
+body.nx.jv{
+  --font:-apple-system,BlinkMacSystemFont,"SF Pro Text","SF Pro Display","Inter","Segoe UI",Roboto,system-ui,sans-serif;
+  --n1:#0e0e0f;--n2:#1c1c1e;--n3:#2c2c2e;--n4:#3a3a3c;--ng:#19f59a;--ny:#d8f83a;
+  --nr:18px;--nt:52px;--nb:124px;--ne:cubic-bezier(.32,.72,0,1);--ns:cubic-bezier(.34,1.36,.5,1);
+  --ink:#fff;--ink2:#a1a1a6;--ink3:#7c7c81;--line:rgba(255,255,255,.08);--line2:rgba(255,255,255,.1);
+  --field:var(--n2);--hover:rgba(255,255,255,.07);--sel:var(--n2);--card:var(--n1);--fill:var(--n4);
+  --j-bg:#000;--j-side:#000;--j-box:var(--n2);--j-menu:var(--n1);--j-sheet:var(--n1);
+  --j-btn:var(--n2);--j-btn2:var(--n3);--j-thumb:#5a5a5e;--j-sw:var(--n3);
+  --win:var(--n1);--solid:#fff;--solid-ink:#000;--j-accent:var(--ng);--j-accent2:var(--ng);--j-focus:#6aaeff;--j-curtain:rgba(0,0,0,.5);
+  --j-askbox:var(--n2);--j-askbox2:var(--n3);--r-ctl:10px;--r-card:20px;
+  letter-spacing:-.008em;
+}
+body.nx.jv :focus-visible{outline:2px solid var(--j-focus);outline-offset:2px}
+
+/* the window, and the opening in it */
+body.nx.jv #win{background:#000;--pl:236px;--pr:318px;border-color:rgba(255,255,255,.1)}
+body.nx.jv.side-off #win{--pl:8px}
+body.nx.jv.paged #win{--nb:8px}
+body.nx.jv.app #win{border-radius:0}
+body.nx.jv.mac #win{border-radius:12px}
+body.nx.jv.mac #win::after{content:"";position:absolute;inset:0;z-index:20;border-radius:inherit;box-shadow:inset 0 0 0 1px rgba(255,255,255,.13);pointer-events:none}
+body.nx.jv #view{background:var(--cv);-webkit-backdrop-filter:none;backdrop-filter:none}
+body.nx.jv #view::before{content:none}
+body.nx.jv #frame{display:block;position:absolute;z-index:2;left:var(--pl);right:var(--pr);top:var(--nt);bottom:var(--nb);border-radius:var(--nr);box-shadow:0 0 0 200vmax #000,inset 0 0 0 1px rgba(255,255,255,.075);pointer-events:none;transition:left .44s var(--ne),right .44s var(--ne),bottom .44s var(--ne)}
+
+/* the sidebar */
+body.nx.jv #nav{left:0;top:0;bottom:0;width:236px;border-radius:0;background:#000;border:0;padding:8px 10px 12px;transition:transform .44s var(--ne)}
+body.nx.jv #nav>*{transition:opacity .3s ease,filter .36s ease,transform .44s var(--ne)}
+body.nx.jv .brandbtn{width:36px;height:36px;margin:0 0 6px 2px;border-radius:50%}
+body.nx.jv.mac .brandbtn{align-self:flex-end;margin:0 0 6px}
+body.nx.jv .search{height:36px;margin:2px 0 8px;padding:0 12px;border-radius:999px;background:var(--n2)}
+body.nx.jv .search kbd{border:0;background:var(--n3);border-radius:6px;color:var(--ink2)}
+body.nx.jv .navsec{font-size:11.5px;font-weight:600;color:var(--ink3);padding:12px 10px 5px;letter-spacing:0}
+body.nx.jv .navlist button{height:36px;padding:0 10px 0 6px;border-radius:999px;font-size:14px;font-weight:600;gap:10px;color:#e9e9ec}
+body.nx.jv .navlist button:hover{background:rgba(255,255,255,.06)}
+body.nx.jv .navlist button[aria-selected="true"]{background:var(--n2);color:#fff}
+body.nx.jv .navlist button .ni{width:26px;height:26px;border-radius:50%}
+body.nx.jv .navlist button .ni svg.f{width:14px;height:14px}
+body.nx.jv.icons-plain .navlist button .ni{width:26px;background:none}
+body.nx.jv #status{display:grid;grid-template-columns:auto minmax(0,1fr);gap:0 10px;align-items:center;padding:8px 6px 2px;min-height:48px;color:var(--ink3);font-size:11.5px}
+body.nx.jv #status>.rg{grid-column:1;grid-row:1/4}
+body.nx.jv #status b{font-weight:600}
+body.nx.jv #status br{display:none}
+body.nx.jv #status>span,body.nx.jv #status>b{grid-column:2}
+body.nx.jv #sideBtn{top:11px;left:194px;width:30px;height:30px;border-radius:50%;color:var(--ink2);transition:left .44s var(--ne),background .15s}
+body.nx.jv #sideBtn:hover{background:var(--n2);color:#fff}
+body.nx.jv.mac #sideBtn{top:11px;left:80px}
+body.nx.jv.side-off #sideBtn{left:12px}
+body.nx.jv.mac.side-off #sideBtn{left:80px}
+@media (min-width:821px){
+  body.nx.jv.side-off #nav{transform:translateX(-100%);opacity:1;pointer-events:none}
+  body.nx.jv.side-off #nav>*{opacity:0;filter:blur(8px);transform:translateX(-26px)}
+}
+@media (max-width:820px){
+  body.nx.jv #win{--pl:8px}
+  body.nx.jv.nav-open #win{--pl:236px}
+  body.nx.jv #nav{transform:translateX(-100%)}
+  body.nx.jv.nav-open #nav{transform:none}
+  body.nx.jv:not(.nav-open) #nav>*{opacity:0;filter:blur(8px);transform:translateX(-26px)}
+}
+
+/* the band across the top, and the round buttons in it */
+body.nx.jv .bar{top:0;height:var(--nt);padding:0 10px 0 16px;gap:10px;transition:left .44s var(--ne),right .44s var(--ne),padding-left .44s var(--ne)}
+body.nx.jv.side-off .bar:not(.low){padding-left:50px}
+body.nx.jv.mac.side-off .bar:not(.low){padding-left:122px}
+body.nx.jv .bar h2,body.nx.jv #viewSub{text-shadow:none}
+body.nx.jv .bar h2{font-size:15px;font-weight:700;letter-spacing:-.02em}
+body.nx.jv #viewSub{font-size:13px;color:var(--ink3)}
+body.nx.jv .pills{gap:6px}
+body.nx.jv .bar .pill:not(.solid){width:34px;height:34px;padding:0;justify-content:center;border:0;border-radius:50%;background:var(--n2);-webkit-backdrop-filter:none;backdrop-filter:none;transition:background .15s,transform .2s var(--ns)}
+body.nx.jv .bar .pill:not(.solid):hover{background:var(--n3)}
+body.nx.jv .bar .pill:not(.solid):active{transform:scale(.9)}
+body.nx.jv .bar .pill:not(.solid) span{display:none}
+body.nx.jv .bar .pill svg{width:16px;height:16px}
+body.nx.jv .only-mid{display:inline-flex}
+body.nx.jv #propsToggle[aria-pressed="true"]{background:#fff;color:#000}
+body.nx.jv #crumbs button.out{background:var(--n2);border-radius:50%}
+
+/* the band across the bottom: the timeline */
+body.nx.jv #time{left:var(--pl);right:var(--pr);bottom:0;height:var(--nb);border-radius:0;background:transparent;transition:left .44s var(--ne),right .44s var(--ne)}
+body.nx.jv #tl{bottom:2px}
+body.nx.jv .bar.low{top:auto;bottom:calc(var(--nb) - 48px);height:42px;padding:0 10px 0 16px}
+body.nx.jv .bar.low .cap{font-size:12px;font-weight:700;color:#fff}
+body.nx.jv #timeLabel{color:var(--ink3);font-weight:500}
+body.nx.jv #brush{background:rgba(25,245,154,.12);border-color:var(--ng)}
+body.nx.jv.touring #tourBtn{background:#fff;color:#000}
+
+/* the properties panel */
+body.nx.jv #props{right:0;top:0;bottom:0;width:318px;border-radius:0;background:#000;border:0;transition:transform .44s var(--ne)}
+body.nx.jv #props>*{transition:opacity .3s ease,filter .36s ease,transform .44s var(--ne)}
+body.nx.jv .phead{height:var(--nt);padding:0 10px 0 18px}
+body.nx.jv .phead h2{font-size:15px;font-weight:700;letter-spacing:-.02em}
+body.nx.jv #propsClose{display:inline-flex;width:30px;height:30px;border-radius:50%;background:var(--n2)}
+body.nx.jv #propsBody,body.nx.jv #entryBody{padding:2px 18px 24px;scrollbar-color:#2c2c2e transparent}
+@media (min-width:1181px){
+  body.nx.jv.props-off:not(.reading) #win{--pr:8px}
+  body.nx.jv.props-off:not(.reading) #props{transform:translateX(100%)}
+  body.nx.jv.props-off:not(.reading) #props>*{opacity:0;filter:blur(8px);transform:translateX(26px)}
+}
+@media (max-width:1180px){
+  body.nx.jv #win{--pr:8px}
+  body.nx.jv.props-open #win,body.nx.jv.reading #win{--pr:318px}
+  body.nx.jv #props{transform:translateX(100%)}
+  body.nx.jv.props-open #props,body.nx.jv.reading #props{transform:none}
+  body.nx.jv:not(.props-open):not(.reading) #props>*{opacity:0;filter:blur(8px);transform:translateX(26px)}
+}
+@media (max-width:820px){ body.nx.jv.nav-open #win{--pr:8px} }
+
+/* the tabs left at an edge when its panel is away: a sliver of black, as a notch at rest */
+body.nx.jv #sideTab,body.nx.jv #propsTab{display:block;position:absolute;z-index:5;top:calc((var(--nt) + 100% - var(--nb)) / 2);width:14px;height:54px;margin-top:-27px;background:#000;border:0;padding:0;cursor:pointer;opacity:0;pointer-events:none;transition:width .34s var(--ns),opacity .2s ease}
+body.nx.jv #sideTab{left:0;border-radius:0 9px 9px 0}
+body.nx.jv #propsTab{right:0;border-radius:9px 0 0 9px}
+body.nx.jv #sideTab:hover,body.nx.jv #propsTab:hover,body.nx.jv #sideTab:focus-visible,body.nx.jv #propsTab:focus-visible{width:20px}
+@media (min-width:821px){ body.nx.jv.side-off #sideTab{opacity:1;pointer-events:auto} }
+@media (max-width:820px){ body.nx.jv:not(.nav-open) #sideTab{opacity:1;pointer-events:auto} }
+@media (min-width:1181px){ body.nx.jv.props-off:not(.reading) #propsTab{opacity:1;pointer-events:auto} }
+@media (max-width:1180px){ body.nx.jv:not(.props-open):not(.reading) #propsTab{opacity:1;pointer-events:auto} }
+body.nx.jv.paged #sideTab,body.nx.jv.paged #propsTab{top:50%}
+
+/* controls inside the panels */
+body.nx.jv .pill{height:34px;padding:0 15px;border:0;border-radius:999px;background:var(--n2);font-weight:600}
+body.nx.jv .pill:hover{background:var(--n3)}
+body.nx.jv .pill.solid{background:#fff;color:#000}
+body.nx.jv .pill.solid:hover{background:#e8e8ea}
+body.nx.jv .pill.icon{width:34px;padding:0}
+body.nx.jv .pill.big{height:46px;padding:0 24px;font-size:15px}
+body.nx.jv :is(.sec,.cap,.navsec){font-weight:600;color:var(--ink3)}
+body.nx.jv .sec{font-size:12px;margin:20px 0 9px}
+body.nx.jv .chip{height:30px;padding:0 12px;border-radius:999px;font-weight:600}
+body.nx.jv .chip:hover{background:rgba(255,255,255,.07)}
+body.nx.jv .chip[aria-pressed="true"]{background:var(--n3);color:#fff}
+body.nx.jv .prow>label,body.nx.jv .prow>span:first-child{color:var(--ink2);font-weight:500}
+body.nx.jv select{background-color:var(--n2);border-radius:10px;font-weight:600}
+body.nx.jv select option{background:var(--n2);color:#fff}
+body.nx.jv .seg{background:var(--n2);border-radius:11px;padding:2px}
+body.nx.jv .seg button{height:28px;border-radius:9px;font-weight:600;color:var(--ink2);transition:background .2s,color .2s}
+body.nx.jv .seg button[aria-pressed="true"],body.nx.jv .seg button[aria-checked="true"]{background:var(--n4);color:#fff}
+body.nx.jv .sl{background:var(--n2);border-radius:10px}
+body.nx.jv .sl i{background:var(--n4);border-radius:10px 0 0 10px}
+body.nx.jv :is(.tg,.switch){background:var(--n3)}
+body.nx.jv :is(.tg,.switch)[aria-checked="true"]{background:var(--ng)}
+body.nx.jv :is(.tg,.switch)::after{transition:transform .3s var(--ns)}
+body.nx.jv .field{background:var(--n2);border-radius:12px}
+body.nx.jv .check i{background:var(--n2);border:0;border-radius:6px}
+body.nx.jv .check input:checked+i{background:var(--ng)}
+body.nx.jv .check input:checked+i::after{border-color:#000}
+body.nx.jv .sv{background:var(--n2)}
+body.nx.jv #entryBody h3{font-size:19px;font-weight:700;letter-spacing:-.02em}
+body.nx.jv #entryBody .tag{border:0;border-radius:999px;background:var(--n2);padding:3px 9px 3px 8px;display:inline-flex;align-items:center;gap:6px}
+body.nx.jv #entryBody .tag::before{content:"";width:7px;height:7px;border-radius:50%;background:var(--c,var(--ink3))}
+body.nx.jv #entryBody .tag.dash{border:0;background:transparent;box-shadow:inset 0 0 0 1px var(--n3)}
+body.nx.jv #entryBody .tag.dash::before{content:none}
+body.nx.jv #entryBody details{border-top:1px solid rgba(255,255,255,.07)}
+body.nx.jv #entryBody summary{font-size:11.5px;font-weight:600;letter-spacing:0;text-transform:none;color:var(--ink3)}
+
+/* pages, in the opening */
+body.nx.jv #page{left:var(--pl);right:var(--pr);top:var(--nt);bottom:var(--nb);border-radius:var(--nr);background:var(--n1);border:0;padding:28px 34px 44px;transition:left .44s var(--ne),right .44s var(--ne)}
+body.nx.jv #page h3{font-size:28px;font-weight:700;letter-spacing:-.035em;line-height:1.12}
+body.nx.jv #page .chero h3{font-size:30px}
+body.nx.jv #page :is(.card,.ilist,.how){background:var(--n2);border:0;border-radius:20px}
+body.nx.jv #page .how>div+div{border-left-color:rgba(255,255,255,.07)}
+body.nx.jv #page .irow+.irow,body.nx.jv #page .ifoot{border-top-color:rgba(255,255,255,.07)}
+body.nx.jv #page .num{background:var(--n2);border-radius:18px}
+body.nx.jv #page .num b{font-weight:700}
+body.nx.jv #page .item{border-radius:12px}
+body.nx.jv #page .rowbar i{height:6px;border-radius:3px}
+body.nx.jv #page .cf{background:var(--n3)}
+body.nx.jv #page .code{background:#000;border-radius:12px}
+body.nx.jv #page .ct.wit{background:#000}
+body.nx.jv #page .lw .bd{background:#000}
+body.nx.jv #page{--ring:var(--n2)}
+
+/* the record's own popover: points at the mark it came from */
+body.nx.jv .pop{position:fixed;left:var(--px,64px);top:var(--py,8px);right:auto;width:280px;z-index:70;background:var(--n1);border:0;border-radius:20px;padding:16px;box-shadow:0 0 0 1px rgba(255,255,255,.09),0 26px 80px rgba(0,0,0,.7);animation:npin .34s var(--ne) both}
+body.nx.jv .pop::before{content:"";position:absolute;left:-9px;top:var(--ay,14px);width:10px;height:18px;background:var(--n1);clip-path:polygon(100% 0,0 50%,100% 100%)}
+body.nx.jv .pop h3{font-size:15px;font-weight:700}
+body.nx.jv .pop .stats{gap:10px}
+body.nx.jv .pop .stats>div{background:var(--n2);border-radius:14px;padding:10px 12px}
+body.nx.jv .pop .stats b{font-size:17px;font-weight:700}
+@keyframes npin{from{opacity:0;filter:blur(6px);transform:translateX(-8px) scale(.97)}}
+
+/* things on the sheet that grow out of its edges, with the corner curving back into the band they hang from */
+body.nx.jv #sampleBar{top:var(--nt);left:calc((var(--pl) + 100% - var(--pr)) / 2);transform:translateX(-50%);border:0;border-radius:0 0 18px 18px;background:#000;-webkit-backdrop-filter:none;backdrop-filter:none;padding:3px 6px 9px 18px;color:var(--ink2);font-weight:500;transition:left .44s var(--ne)}
+body.nx.jv #sampleBar::before,body.nx.jv #sampleBar::after,body.nx.jv #zoomCtl::before,body.nx.jv #zoomCtl::after,body.nx.jv #hiBar::before,body.nx.jv #hiBar::after,body.nx.jv #tourChip::before,body.nx.jv #tourChip::after,body.nx.jv #spaces::before,body.nx.jv #spaces::after{content:"";position:absolute;width:16px;height:16px;pointer-events:none}
+body.nx.jv #sampleBar::before{left:-16px;top:0;background:radial-gradient(circle at 0 100%,transparent 15.5px,#000 16px)}
+body.nx.jv #sampleBar::after{right:-16px;top:0;background:radial-gradient(circle at 100% 100%,transparent 15.5px,#000 16px)}
+body.nx.jv #sampleBar .pill{height:28px}
+body.nx.jv :is(#zoomCtl,#hiBar,#tourChip){background:#000;color:#fff;box-shadow:none;-webkit-backdrop-filter:none;backdrop-filter:none;--xh:rgba(255,255,255,.1);--xl:transparent}
+body.nx.jv #zoomCtl{right:calc(var(--pr) + 24px);bottom:var(--nb);height:38px;padding:0 6px;border-radius:16px 16px 0 0;transition:opacity .2s,right .44s var(--ne),bottom .44s var(--ne)}
+body.nx.jv :is(#zoomCtl,#hiBar,#tourChip)::before{left:-16px;bottom:0;background:radial-gradient(circle at 0 0,transparent 15.5px,#000 16px)}
+body.nx.jv :is(#zoomCtl,#hiBar,#tourChip)::after{right:-16px;bottom:0;background:radial-gradient(circle at 100% 0,transparent 15.5px,#000 16px)}
+body.nx.jv #zoomCtl button{border-radius:50%;opacity:.85;min-width:28px;height:28px}
+body.nx.jv #zoomPct{font-weight:600}
+body.nx.jv :is(#hiBar,#tourChip){left:calc((var(--pl) + 100% - var(--pr)) / 2);bottom:var(--nb);height:44px;padding:0 6px 0 16px;border-radius:18px 18px 0 0;transform:translate(-50%,100%);font-size:13px;transition:opacity .22s ease,transform .44s var(--ne),left .44s var(--ne)}
+body.nx.jv :is(#hiBar,#tourChip).on{transform:translate(-50%,0)}
+body.nx.jv :is(#hiBar,#tourChip) button{height:30px;border-radius:999px;padding:0 12px;font-weight:600}
+body.nx.jv #hiBar button.go{background:#fff;color:#000}
+body.nx.jv #zoomHint{display:none}
+
+/* the spaces: a notch on the sheet's left edge, a ring for each */
+body.nx.jv #spaces{left:var(--pl);top:calc((var(--nt) + 100% - var(--nb)) / 2);bottom:auto;transform:translateY(-50%);max-width:none;display:grid;justify-items:center;gap:10px;padding:14px 10px 14px 8px;border-radius:0 24px 24px 0;background:#000;color:#fff;text-shadow:none;transition:left .44s var(--ne)}
+body.nx.jv #spaces:empty{display:none}
+body.nx.jv #spaces::before{left:0;top:-16px;background:radial-gradient(circle at 100% 0,transparent 15.5px,#000 16px)}
+body.nx.jv #spaces::after{left:0;bottom:-16px;background:radial-gradient(circle at 100% 100%,transparent 15.5px,#000 16px)}
+body.nx.jv #spaces .rg{display:grid;grid-template-columns:none;justify-items:center;gap:5px;width:50px;padding:0;text-align:center;color:#fff;font:700 12px/1 var(--font);font-variant-numeric:tabular-nums;transition:opacity .25s,transform .25s var(--ns)}
+body.nx.jv #spaces .rg:hover{transform:scale(1.06)}
+body.nx.jv #spaces .rg.off{opacity:.32}
+.rg{position:relative}
+.rg .ring{position:relative;display:grid;place-items:center}
+.rg .ring svg{display:block}
+.rg .ring b{position:absolute;inset:0;display:grid;place-items:center;font:700 12.5px/1 var(--font);color:#fff}
+.rg .arc{transition:stroke-dasharray .9s var(--ne)}
+.rg.spin .arc{animation:rgspin 1s linear infinite;transform-origin:50% 50%}
+@keyframes rgspin{to{transform:rotate(270deg)}}
+
+/* popovers that point, and tooltips: black, with a tail, and they slide from one thing to the next */
+body.nx.jv #ntip,body.nx.jv #npop{display:block;position:fixed;left:0;top:0;z-index:96;pointer-events:none;opacity:0;transform:translate3d(var(--tx,0),var(--ty,0),0) scale(.96);filter:blur(5px);transition:opacity .18s ease,filter .24s ease,transform .36s var(--ne)}
+body.nx.jv :is(#ntip,#npop).on{opacity:1;filter:none;transform:translate3d(var(--tx,0),var(--ty,0),0)}
+body.nx.jv :is(#ntip,#npop).still{transition:opacity .18s ease,filter .24s ease}
+#ntip>b{display:block;background:#000;color:#fff;font:600 12.5px/1 var(--font);letter-spacing:-.01em;padding:9px 12px 10px;border-radius:12px;white-space:nowrap;box-shadow:0 0 0 1px rgba(255,255,255,.12),0 12px 34px rgba(0,0,0,.55)}
+#ntip>i,#npop>i{position:absolute;width:16px;height:9px;background:#000}
+#ntip.below>i{top:-8px;left:calc(var(--ax) - 8px);clip-path:polygon(50% 0,100% 100%,0 100%)}
+#ntip.above>i{bottom:-8px;left:calc(var(--ax) - 8px);clip-path:polygon(0 0,100% 0,50% 100%)}
+body.nx.jv #npop{z-index:75}
+body.nx.jv #npop.on{pointer-events:auto}
+#npop>.box{width:250px;background:#000;color:#fff;border-radius:18px;padding:14px 15px 13px;box-shadow:0 0 0 1px rgba(255,255,255,.12),0 22px 64px rgba(0,0,0,.6);font-size:12.5px}
+#npop>i{width:10px;height:18px}
+#npop.right>i{left:-9px;top:calc(var(--ay) - 9px);clip-path:polygon(100% 0,0 50%,100% 100%)}
+#npop.left>i{right:-9px;top:calc(var(--ay) - 9px);clip-path:polygon(0 0,100% 50%,0 100%)}
+#npop h4{display:flex;align-items:center;gap:8px;margin:0 0 10px;font-size:14.5px;font-weight:700;letter-spacing:-.015em}
+#npop h4 i{width:9px;height:9px;border-radius:50%;background:var(--c)}
+#npop .mr{display:flex;justify-content:space-between;gap:10px;font-weight:600;color:#fff;margin-top:8px}
+#npop .mr span{color:#8e8e93;font-weight:500}
+#npop .mb{height:5px;border-radius:3px;background:#2c2c2e;margin:6px 0 4px;overflow:hidden}
+#npop .mb i{display:block;height:100%;border-radius:3px;background:var(--c);width:var(--w)}
+#npop .mu{color:#fff;font-weight:600;font-size:12px}
+#npop .hint{margin-top:11px;color:#8e8e93;font-size:11.5px}
+#npop .list{display:grid;gap:2px;margin:0 -6px}
+#npop .list button{display:grid;grid-template-columns:12px minmax(0,1fr) auto;gap:8px;align-items:center;padding:6px;border-radius:9px;text-align:left;font-weight:600;color:#fff}
+#npop .list button:hover{background:#1c1c1e}
+#npop .list button i{width:7px;height:7px;border-radius:50%;background:var(--c)}
+#npop .list button span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+#npop .list button em{font-style:normal;color:#8e8e93;font-variant-numeric:tabular-nums;font-weight:500}
+
+/* dialogs, the first screen, the command bar */
+body.nx.jv .overlay{background:rgba(0,0,0,.52);-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px)}
+body.nx.jv .dlg{position:relative;background:var(--n1);border:0;border-radius:28px;padding:22px 24px 24px;box-shadow:0 0 0 1px rgba(255,255,255,.08),0 40px 120px rgba(0,0,0,.72);animation:none}
+body.nx.jv .dlg-head h2{font-size:19px;font-weight:700;letter-spacing:-.025em}
+body.nx.jv .dlg .sub{color:var(--ink2)}
+body.nx.jv #drop{border:1.5px dashed rgba(255,255,255,.14);border-radius:22px;background:transparent}
+body.nx.jv #drop.over{border-color:var(--ng);background:rgba(25,245,154,.06)}
+body.nx.jv .agents{border:0;background:transparent;gap:6px;border-radius:0}
+body.nx.jv .agent{grid-template-columns:18px 84px minmax(0,1fr);align-items:center;background:var(--n2);border-radius:14px;padding:10px 12px}
+body.nx.jv .agent::before{content:"";width:16px;height:16px;border-radius:50%;box-shadow:inset 0 0 0 2px var(--n4)}
+body.nx.jv .agent.run::before{box-shadow:none;background:conic-gradient(var(--ng) 0 28%,var(--n4) 0);-webkit-mask:radial-gradient(circle,transparent 5.6px,#000 6px);mask:radial-gradient(circle,transparent 5.6px,#000 6px);animation:spin .8s linear infinite}
+body.nx.jv .agent.done::before{box-shadow:none;background:var(--ng) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath d='M4.6 8.2l2.2 2.2 4.6-4.8' fill='none' stroke='%23000' stroke-width='1.9' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") center/16px no-repeat;animation:pop .4s var(--ns)}
+@keyframes spin{to{transform:rotate(360deg)}}
+@keyframes pop{from{transform:scale(.4);opacity:0}}
+body.nx.jv .problems{background:rgba(255,90,80,.12);border-radius:14px}
+body.nx.jv #themeList button,body.nx.jv #paletteList button{border:0;background:var(--n2);border-radius:16px}
+body.nx.jv #themeList button[aria-checked="true"],body.nx.jv #paletteList button[aria-checked="true"]{background:var(--n3);box-shadow:inset 0 0 0 2px #fff}
+body.nx.jv #welcome{background:rgba(0,0,0,.88);-webkit-backdrop-filter:blur(22px);backdrop-filter:blur(22px);animation:none}
+body.nx.jv #welcome h1{font-weight:700;letter-spacing:-.035em}
+body.nx.jv #welcome .way{position:relative;border:0;border-radius:24px;background:var(--n1);padding:20px;transition:background .2s,transform .3s var(--ns)}
+body.nx.jv #welcome .way:hover{background:var(--n2);transform:translateY(-2px)}
+body.nx.jv .palbox{background:var(--n1);border:0;border-radius:22px;box-shadow:0 0 0 1px rgba(255,255,255,.09),0 30px 100px rgba(0,0,0,.7);animation:npin .3s var(--ne) both}
+body.nx.jv .palin{border-bottom-color:rgba(255,255,255,.07)}
+body.nx.jv #palList button{border-radius:12px}
+body.nx.jv #palList button[aria-selected="true"]{background:var(--n3);color:#fff}
+body.nx.jv #palList button[aria-selected="true"] span{color:var(--ink2)}
+body.nx.jv #offer{background:#000;border:0;border-radius:999px;padding:6px 6px 6px 18px;box-shadow:0 0 0 1px rgba(255,255,255,.1),0 20px 60px rgba(0,0,0,.6);-webkit-backdrop-filter:none;backdrop-filter:none}
+
+/* the toast: a black pill that changes its mind in place */
+body.nx.jv #toast{display:flex;align-items:center;gap:11px;bottom:20px;background:#000;border:0;border-radius:999px;padding:6px 20px 6px 6px;min-height:46px;box-shadow:0 0 0 1px rgba(255,255,255,.11),0 20px 60px rgba(0,0,0,.6);font-size:13.5px;font-weight:600;color:#fff;letter-spacing:-.01em;transform:translate(-50%,18px) scale(.94);transition:opacity .22s ease,transform .5s var(--ns),width .45s var(--ne);overflow:hidden;white-space:nowrap}
+body.nx.jv #toast.on{transform:translate(-50%,0)}
+body.nx.jv #toast .ti{flex:none;width:34px;height:34px;border-radius:50%;background:var(--n2);display:grid;place-items:center}
+body.nx.jv #toast .ti svg{width:16px;height:16px;color:#fff}
+body.nx.jv #toast.done .ti{background:var(--ng)}
+body.nx.jv #toast.done .ti svg{color:#000}
+body.nx.jv #toast.busy .ti svg{animation:spin .9s linear infinite}
+body.nx.jv #toast .tt{display:block;overflow:hidden;text-overflow:ellipsis;transition:filter .3s ease,opacity .3s ease}
+body.nx.jv #toast.swap .tt{filter:blur(6px);opacity:0}
+
+/* the shimmer: a band of thin-film colour passing over something as it changes, and a green breath when it is done */
+.wv-sheen{position:absolute;inset:0;z-index:30;border-radius:inherit;pointer-events:none;overflow:hidden;mix-blend-mode:screen;opacity:0}
+.wv-sheen::before{content:"";position:absolute;inset:-30% -70%;background:linear-gradient(104deg,transparent 28%,rgba(255,60,190,.55) 36%,rgba(110,90,255,.62) 42%,rgba(40,200,255,.6) 48%,rgba(80,255,170,.52) 54%,rgba(255,226,80,.55) 60%,rgba(255,110,70,.4) 65%,transparent 72%);filter:blur(26px) saturate(1.3);transform:translateX(var(--sx,-60%))}
+.wv-sheen::after{content:"";position:absolute;inset:0;background:radial-gradient(70% 60% at var(--bx,30%) var(--by,40%),rgba(140,90,255,.35),transparent 70%),radial-gradient(60% 55% at calc(100% - var(--bx,30%)) calc(100% - var(--by,40%)),rgba(40,220,255,.3),transparent 70%);filter:blur(20px)}
+.wv-sheen.ok::before{background:linear-gradient(180deg,transparent 0%,rgba(25,245,154,.0) 20%,rgba(25,245,154,.55) 45%,rgba(25,245,154,.0) 75%);inset:-60% -10%;transform:translateY(var(--sy,-60%))}
+.wv-sheen.ok::after{background:radial-gradient(80% 60% at 50% 0%,rgba(25,245,154,.45),transparent 72%)}
+body.mac #dragbar{display:block;position:fixed;left:0;right:0;top:0;height:50px;z-index:0;-webkit-app-region:drag}
+body.mac :is(button,input,select,textarea,a,label,.pop,.dlg,canvas#stars,#npop){-webkit-app-region:no-drag}
+body.nx.jv #tip{z-index:4}
+body.nx.jv #start{z-index:6}
+@media (prefers-reduced-motion:reduce){ .wv-sheen{display:none} }
+body.nx.jv .okmark{display:grid;place-items:center;width:44px;height:44px;border-radius:50%;background:var(--ng) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath d='M4.4 8.3l2.4 2.4 4.9-5.2' fill='none' stroke='%23000' stroke-width='1.7' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") center/26px no-repeat;box-shadow:0 0 0 6px rgba(25,245,154,.14),0 0 40px rgba(25,245,154,.35);animation:pop .5s var(--ns)}
+
 </style>
 </head>
 <body>
@@ -968,6 +1271,7 @@ body.vib.jv[data-glass="frosted"]:not([data-theme="original"]) #view::before{opa
     <div id="view">
       <canvas id="specimen" aria-label="Your record, drawn as points"></canvas>
       <canvas id="hudc" aria-hidden="true"></canvas>
+      <div id="frame" aria-hidden="true"></div>
       <div id="labels"></div>
       <div id="titles"></div>
       <div id="thrNames"></div>
@@ -994,6 +1298,7 @@ body.vib.jv[data-glass="frosted"]:not([data-theme="original"]) #view::before{opa
     <div id="page" hidden></div>
   </main>
 
+  <button type="button" id="sideTab" aria-label="Show the sidebar"></button><button type="button" id="propsTab" aria-label="Show the properties"></button>
   <aside id="props" aria-label="Properties">
     <div class="phead"><h2 id="propsTitle">Properties</h2><button class="pill icon" type="button" id="propsClose" aria-label="Close"><svg><use href="#i-x"/></svg></button></div>
     <div id="propsBody"></div>
@@ -1099,6 +1404,8 @@ body.vib.jv[data-glass="frosted"]:not([data-theme="original"]) #view::before{opa
 </div>
 <div id="offer" role="status" hidden><span id="offerText"></span><span class="row"><button class="pill" type="button" id="offerNo">Not now</button><button class="pill solid" type="button" id="offerYes">Add it</button></span></div>
 <div id="toast" role="status"></div>
+<div id="ntip" aria-hidden="true"><b></b><i></i></div>
+<div id="npop" role="dialog" aria-modal="false"><div class="box"></div><i></i></div>
 
 <script>
 /* Anatomy: Z-Anatomy (CC BY-SA 4.0), built on BodyParts3D (c) The Database Center for Life Science. Point atlas derived for Wit, shared under CC BY-SA 4.0. */
@@ -3154,7 +3461,7 @@ function setTip(c, x, y) {
   el.style.transform = 'translate(' + clamp(x + 14, 6, vw - w - 6) + 'px,' + clamp(y + 16, 6, vh - hh - 6) + 'px)'; el.classList.add('on');
 }
 let toastT = 0;
-function toast(msg) { const el = $('#toast'); el.textContent = msg; el.classList.add('on'); clearTimeout(toastT); toastT = setTimeout(() => el.classList.remove('on'), 4200); }
+function toast(msg, kind) { if (typeof Nx === 'object' && Nx && Nx.on()) { Nx.toast(msg, kind); return; } const el = $('#toast'); el.className = ''; el.style.width = ''; el.textContent = msg; el.classList.add('on'); clearTimeout(toastT); toastT = setTimeout(() => el.classList.remove('on'), 4200); }
 
 /* which named structure of the figure is under a point on screen */
 const _lp = [0, 0, 0];
@@ -3280,6 +3587,7 @@ function renderSpaces() {
   const fd = Store.field(cur.colorBy), gc = Store.fieldColours(cur.colorBy, theme(), cur.palette), nn = new Int32Array(fd.vals.length), nr = new Int32Array(fd.vals.length);
   for (let i = 0; i < S.n; i++) if (lay.vis[i]) { if (S.layer[i]) nr[fd.of[i]]++; else nn[fd.of[i]]++; }
   let ids = fd.vals.map((v, i) => i).filter(i => nn[i] + nr[i] > 0); if (!fd.F.time) ids.sort((a, b) => nn[b] + nr[b] - nn[a] - nr[a]);
+  if (typeof Nx === 'object' && Nx && Nx.on()) { Nx.spaces(el, { ids, nn, nr, fd, gc, hiK: new Set(st.filter.hi.filter(x => x.f.length === 1 && x.f[0] === cur.colorBy).map(x => x.k[0])), two: S.notes && S.records }); return; }
   const cap = vh < 420 ? 5 : vh < 560 ? 8 : 12, rest = ids.length > cap ? ids.splice(cap - 1) : [], hiK = new Set(st.filter.hi.filter(x => x.f.length === 1 && x.f[0] === cur.colorBy).map(x => x.k[0])), two = S.notes && S.records;
   el.append(h('div', { class: 'hd' }, h('span', { text: fd.F.id === 'entry' ? 'Entries' : fd.F.label + 's' }), h('span', { text: two ? 'Notes · Record' : 'Entries' })));
   for (const i of ids) { const v = fd.vals[i], b = h('button', { type: 'button', class: hiK.size && !hiK.has(v.label) ? 'off' : '', title: 'Click to light this and fly to it. Click twice to dive in.', onclick: ev => { if (ev.detail >= 2) diveInto({ f: [cur.colorBy], k: [v.label] }); else toggleHi({ f: [cur.colorBy], k: [v.label] }, gc[i]); } }, h('i'), h('span', { text: v.label === UNSORTED ? 'Being organised' : v.label }), h('em', { text: two ? fmtN(nn[i]) + ' · ' + fmtN(nr[i]) : fmtN(nn[i] + nr[i]) })); b.style.setProperty('--c', cssCol(gc[i])); el.append(b); }
@@ -3287,8 +3595,14 @@ function renderSpaces() {
 }
 
 /* ---------- the status line in the sidebar ---------- */
-let agentNote = '';
+let agentNote = '', statusP = null;
 function renderStatus() {
+  renderStatus0(); const el = $('#status');
+  if (!el || !S.rec || !el.firstChild || typeof Nx !== 'object' || !Nx || !Nx.on()) return;
+  const spin = !!agentNote, p = spin ? 0.28 : S.n ? (lay ? litCount() : S.n) / S.n : 0;
+  el.prepend(h('span', { class: 'rg' + (spin ? ' spin' : ''), title: spin ? 'Working' : Nx.pct(p) + ' of the record is lit' }, Nx.ring(p, '#19f59a', 30, null, statusP))); statusP = p;
+}
+function renderStatus0() {
   renderHiBar();
   const el = $('#status'); if (!el || !S.rec) return; el.textContent = '';
   const f = st.filter, clear = h('button', { type: 'button', text: 'Clear', onclick: clearFilters }), n = lay ? litCount() : S.n;
@@ -3303,7 +3617,8 @@ function renderStatus() {
 
 /* ---------- the reader ---------- */
 function openEntry(e) {
-  document.body.classList.add('reading'); $('#propsTitle').textContent = 'Entry'; $('#propsBody').hidden = true; const el = $('#entryBody'); el.hidden = false; el.textContent = ''; el.scrollTop = 0;
+  if (!document.body.classList.contains('reading') && typeof Nx === 'object' && Nx && Nx.on() && document.body.classList.contains('props-off')) Nx.settle();
+  document.body.classList.add('reading'); if (typeof Nx === 'object' && Nx) Nx.syncToggle(); $('#propsTitle').textContent = 'Entry'; $('#propsBody').hidden = true; const el = $('#entryBody'); el.hidden = false; el.textContent = ''; el.scrollTop = 0;
   const en = S.rec.entries[e], gc = Store.fieldColours('space', theme(), cur.palette), sp = Store.field('space'), col = cssCol(gc[sp.of[e]]);
   el.append(h('h3', { text: en.t }));
   const kind = h('span', { class: 'tag', text: KIND_LABEL[en.k] || 'Note' }); kind.style.setProperty('--c', col);
@@ -3330,7 +3645,7 @@ function openEntry(e) {
   const at = S.byDate.indexOf(e), go = d => { const j = S.byDate[at + d]; if (j != null) select(j, true); };
   el.append(h('div', { class: 'nav2' }, h('button', { type: 'button', class: 'pill', onclick: () => go(-1), disabled: at <= 0 }, icon('i-prev'), 'Earlier'), h('button', { type: 'button', class: 'pill', onclick: () => go(1), disabled: at >= S.n - 1 }, 'Later', icon('i-next'))));
 }
-function closeEntry() { document.body.classList.remove('reading'); $('#propsTitle').textContent = 'Properties'; $('#propsBody').hidden = false; $('#entryBody').hidden = true; }
+function closeEntry() { if (document.body.classList.contains('reading') && typeof Nx === 'object' && Nx && Nx.on() && document.body.classList.contains('props-off')) Nx.settle(); document.body.classList.remove('reading'); if (typeof Nx === 'object' && Nx) Nx.syncToggle(); $('#propsTitle').textContent = 'Properties'; $('#propsBody').hidden = false; $('#entryBody').hidden = true; }
 
 /* ---------- timeline: how much was written when; drag across it to keep only those dates ---------- */
 const TL = { bins: 150, all: null, lit: null, max: 1 };
@@ -3400,7 +3715,7 @@ function drawStars() {                                      // rebuilt whenever 
   for (let i = 0; i < S.n; i++) { const k = fd.of[i]; cnt[k]++; if (S.layer[i]) nr[k]++; else nn[k]++; }
   const ids = fd.vals.map((v, i) => i).filter(i => cnt[i] > 0).sort((a, b) => cnt[b] - cnt[a]).slice(0, 18), n = ids.length, at = new Int16Array(nv).fill(-1);
   let total = 0; ids.forEach((vi, k) => { at[vi] = k; total += cnt[vi]; }); total = Math.max(1, total);
-  const cs = getComputedStyle(document.body); St.ink = cs.getPropertyValue('--ink').trim() || '#fff'; St.font = cs.getPropertyValue('--font') || 'sans-serif'; St.dark = !theme().ink;
+  const cs = getComputedStyle(document.body); St.ink = cs.getPropertyValue('--ink').trim() || '#fff'; St.font = cs.getPropertyValue('--font') || 'sans-serif'; St.dark = !theme().ink || document.body.classList.contains('nx');
   const inkC = /^#[0-9a-f]{6}$/i.test(St.ink) ? hex(St.ink) : St.dark ? [1, 1, 1] : [0, 0, 0], mixc = (a, b, t) => [a[0] + (b[0] - a[0]) * t, a[1] + (b[1] - a[1]) * t, a[2] + (b[2] - a[2]) * t], far = St.dark ? [1, 1, 1] : [0, 0, 0];
   /* every space has a share of the globe as large as its share of the record. They start evenly spread, the large ones
      apart from each other, and are then eased away from one another until no two patches overlap */
@@ -3777,7 +4092,8 @@ function renderRecordMenu() {
   if (own) acts.append(h('button', { type: 'button', class: 'pill', onclick: removeMine }, 'Remove my notes'));
   m.append(acts, h('p', { class: 'hint', text: own ? (S.rec.kept ? 'Kept on this computer. Nothing has been uploaded.' : 'Held in memory only. It will be gone when Wit closes.') : 'An invented record, so there is something to explore before you add your own.' }));
 }
-function toggleRecordMenu(on) { const m = $('#recordMenu'), b = $('#recordBtn'); if (on == null) on = m.hidden; m.hidden = !on; b.setAttribute('aria-expanded', String(on)); if (on) renderRecordMenu(); }
+function toggleRecordMenu(on) { const m = $('#recordMenu'), b = $('#recordBtn'); if (on == null) on = m.hidden; m.hidden = !on; b.setAttribute('aria-expanded', String(on)); if (on) renderRecordMenu();
+  if (on && document.body.classList.contains('nx')) { if (m.parentNode !== document.body) document.body.append(m); const r = b.getBoundingClientRect(), y = Math.max(8, r.top - 8); m.style.setProperty('--px', (r.right + 14) + 'px'); m.style.setProperty('--py', y + 'px'); m.style.setProperty('--ay', (r.top + r.height / 2 - y - 9) + 'px'); } }
 const recordJSON = () => JSON.stringify({ name: S.rec.name, exported: new Date().toISOString(), entries: S.rec.entries.map((e, i) => ({ title: e.t, date: new Date(e.d).toISOString(), folder: S.path[i], kind: KINDS[e.k], source: SRC_ALL[e.s], speaker: e.p != null ? SPEAKERS[e.p] : undefined, chat: e.c, tags: e.g, words: e.w, links: (e.l || []).map(j => S.rec.entries[j] && S.rec.entries[j].t).filter(Boolean), text: e.b })) }, null, 1);
 async function copyRecord() { try { await navigator.clipboard.writeText(recordJSON()); toast('Copied the record as JSON. Paste it into a file to keep it.'); } catch (e) { toast('Copying was not allowed here.'); } }
 function saveBlob(blob, name) { const url = URL.createObjectURL(blob), a = h('a', { href: url, download: name }); document.body.append(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(url), 4000); }
@@ -3799,15 +4115,18 @@ function saveImage() {
 /* ----- appearance ----- */
 function setTheme(id, quiet) {
   st.theme = id; const t = theme(); U.bg = hex(t.bg); U.fg = hex(t.fg); U.ink = t.ink;
-  const b = document.body; b.dataset.theme = t.id; b.dataset.chrome = t.ink ? 'light' : 'dark'; if (b.classList.contains('jv')) document.documentElement.dataset.look = t.ink ? 'plain' : 'dark'; if (window.witDesktop && window.witDesktop.theme) window.witDesktop.theme(b.dataset.chrome).catch(() => { }); b.style.setProperty('--cv', t.bg); b.style.setProperty('--cvink', t.fg);
+  const b = document.body; b.dataset.theme = t.id; b.dataset.chrome = t.ink && !b.classList.contains('nx') ? 'light' : 'dark'; if (b.classList.contains('jv')) document.documentElement.dataset.look = b.dataset.chrome === 'light' ? 'plain' : 'dark'; if (window.witDesktop && window.witDesktop.theme) window.witDesktop.theme(b.dataset.chrome).catch(() => { }); b.style.setProperty('--cv', t.bg); b.style.setProperty('--cvink', t.fg);
   if (!quiet && S.rec) { layCache.clear(); show({}, { force: true, fx: false, dur: 0.4 }); drawStars(); }
 }
 const GLASS_OPTS = [['clear', 'Clear', 'Your desktop shows through, softly blurred, with a very fine grain.'], ['frosted', 'Frosted', 'A denser blur, so less of the desktop comes through.'], ['solid', 'Solid', 'Nothing shows through. The theme fills the window.']];
-const LOOKS = [['flat', 'Flat', 'Black and flat in Apple’s colours, with Manrope type and a light that moves in the Ask box.'], ['classic', 'Classic', 'The original look. The theme fills the window.']];
-function curLook() { const q = (location.search.match(/[?&]look=(flat|classic)/) || [])[1]; if (q) return q; try { return localStorage.getItem('wit.look') || 'flat'; } catch (e) { return 'flat'; } }
+const LOOKS = [['black', 'Black', 'Pure black that grows out of the window’s edges: rings for amounts, popovers that point, and a liquid shimmer when something changes.'], ['flat', 'Flat', 'Black and flat in Apple’s colours, with Manrope type and a light that moves in the Ask box.'], ['classic', 'Classic', 'The original look. The theme fills the window.']];
+function curLook() { const q = (location.search.match(/[?&]look=(black|flat|classic)/) || [])[1]; if (q) return q; try { return localStorage.getItem('wit.look') || 'black'; } catch (e) { return 'black'; } }
 function applyLook(id) {
-  const on = id === 'flat', b = document.body; b.classList.toggle('jv', on);
-  document.documentElement.dataset.look = on && b.dataset.chrome === 'light' ? 'plain' : 'dark';
+  const nx = id === 'black', on = nx || id === 'flat', b = document.body; b.classList.toggle('jv', on); b.classList.toggle('nx', nx);
+  /* Black is always solid: on a Mac the see-through window is set aside, and only what the window needs from it is kept */
+  if (typeof VIB !== 'undefined' && VIB) { b.classList.toggle('vib', !nx); b.classList.toggle('mac', nx); document.documentElement.style.background = 'transparent'; }
+  if (st.theme) setTheme(st.theme, true); else document.documentElement.dataset.look = on && b.dataset.chrome === 'light' ? 'plain' : 'dark';
+  if (typeof Nx === 'object') Nx.look(nx);
 }
 function lookStyle() {
   let row = $('#styleRow'); if (!row) { row = h('div', { id: 'styleRow' }, h('div', { class: 'cap', text: 'Style' }), h('div', { class: 'seg', role: 'radiogroup', 'aria-label': 'Style' }), h('p', { class: 'gnote' })); $('#lookDlg .sub').after(row); }
@@ -3829,7 +4148,7 @@ function sideSet(off, quiet) {
   document.body.classList.toggle('side-off', off); const b = $('#sideBtn');
   if (b) { b.setAttribute('aria-pressed', String(!off)); b.setAttribute('aria-label', (off ? 'Show' : 'Hide') + ' the sidebar'); b.title = (off ? 'Show' : 'Hide') + ' the sidebar (⌃⌘S)'; }
   try { localStorage.setItem('wit.side', off ? 'off' : 'on'); } catch (e) { /* kept for this visit only */ }
-  if (!quiet) { try { refit(false); } catch (e) { /* the brain is not open yet */ } setTimeout(() => { try { sizeCanvas(); refit(false); drawTimeline(); } catch (e) { /* as above */ } }, 340); }
+  if (!quiet) { try { refit(false); } catch (e) { /* the brain is not open yet */ } setTimeout(() => { try { sizeCanvas(); refit(false); drawTimeline(); renderSpaces(); } catch (e) { /* as above */ } }, 470); }
 }
 function sideInit() {
   let off = false; try { off = localStorage.getItem('wit.side') === 'off'; } catch (e) { /* default: shown */ }
@@ -3839,6 +4158,7 @@ function sideInit() {
 }
 function lookGlass() {
   if (!VIB || !window.witDesktop || !window.witDesktop.glass) return;
+  if (document.body.classList.contains('nx')) { const r = $('#glassRow'); if (r) r.remove(); return; }
   let row = $('#glassRow'); if (!row) { row = h('div', { id: 'glassRow' }, h('div', { class: 'cap', text: 'Window' }), h('div', { class: 'seg', role: 'radiogroup', 'aria-label': 'Window' }), h('p', { class: 'gnote' })); $('#lookDlg .sub').after(row); }
   const cur = document.body.dataset.glass || 'clear', seg = row.querySelector('.seg'); seg.textContent = '';
   GLASS_OPTS.forEach(([id, name]) => seg.append(h('button', { type: 'button', 'aria-pressed': String(id === cur), text: name, onclick: () => { document.body.dataset.glass = id; lookGlass(); window.witDesktop.glass(id).then(g => { if (g !== id) { document.body.dataset.glass = g; lookGlass(); } }).catch(() => { }); } })));
@@ -3847,7 +4167,7 @@ function lookGlass() {
 function openLook() {
   $('#lookDlg').hidden = false; lookGlass(); lookIcons(); lookStyle(); const tl = $('#themeList'), pl = $('#paletteList'); tl.textContent = ''; pl.textContent = '';
   THEMES.forEach(t => {
-    const cv = h('canvas', { width: 220, height: 108 }), b = h('button', { type: 'button', role: 'radio', 'aria-checked': String(t.id === st.theme), onclick: () => { setTheme(t.id); openLook(); } }, cv, t.name), x = cv.getContext('2d'), Rn = mulberry(hashStr(t.id));
+    const cv = h('canvas', { width: 220, height: 108 }), b = h('button', { type: 'button', role: 'radio', 'aria-checked': String(t.id === st.theme), onclick: () => { setTheme(t.id); try { localStorage.setItem('wit.theme', t.id); } catch (e) { /* kept for this visit only */ } openLook(); } }, cv, t.name), x = cv.getContext('2d'), Rn = mulberry(hashStr(t.id));
     x.fillStyle = t.bg; x.fillRect(0, 0, 220, 108);
     for (let i = 0; i < 520; i++) { const a = Rn() * TAU, r = Math.sqrt(Rn()) * 44, q = Rn(); x.fillStyle = q < 0.25 ? t.fg : t.areas[(i % 3)]; x.globalAlpha = 0.5 + 0.5 * Rn(); const s = q > 0.96 ? 3 : 1.6; x.fillRect(110 + Math.cos(a) * r * 1.5, 54 + Math.sin(a) * r, s, s); }
     tl.append(b);
@@ -3915,6 +4235,7 @@ function closeAdd() { $('#addDlg').hidden = true; pending = null; if (lastFocus 
 async function runImport(files) {
   if (!files.length) return;
   $('#addPick').hidden = true; $('#addRun').hidden = false; $('#addTitle').textContent = 'Filing';
+  if (Nx.on()) { const d = $('#addDlg .dlg'); Wave.morph(d, { parts: d.children, amp: 28 }); }
   $('#runSub').textContent = 'Working through ' + fmtN(files.length) + (files.length === 1 ? ' file.' : ' files.');
   const list = $('#agentList'); list.textContent = ''; const rows = {};
   const mk = agentMark(), order = AGENT_ROWS.map(r => r[0]); let lobesDone = 0; $('#runMark').textContent = ''; $('#runMark').append(mk); setLobes(mk, 0, 0);
@@ -3942,6 +4263,7 @@ async function runImport(files) {
   $('#addTitle').textContent = 'Filed';
   $('#runSub').textContent = fmtN(res.entries.length) + (res.entries.length === 1 ? ' entry' : ' entries') + ' filed into ' + fmtN(new Set(res.entries.map(e => e.f)).size) + (new Set(res.entries.map(e => e.f)).size === 1 ? ' folder' : ' folders') + (res.dup ? '. ' + fmtN(res.dup) + ' you already had were skipped.' : '.');
   $('#runDone').disabled = false; $('#runDone').focus();
+  if (Nx.on()) { const rm = $('#runMark'), d = $('#addDlg .dlg'); rm.textContent = ''; rm.append(h('span', { class: 'okmark', role: 'img', 'aria-label': 'Done' })); Wave.ok(d, { parts: d.children }); }
 }
 async function commitPending() {
   if (!pending) return; const rec = pending; pending = null;
@@ -5186,6 +5508,205 @@ const Backdrop = (function () {
   return { set(v) { if (v && !gl && !init()) return; if (!gl) return; if (v === on) return; on = v; if (on && !raf) raf = requestAnimationFrame(draw); } };
 })();
 
+/* ---------- Black: the tabs at the edges, tooltips and popovers that point, rings for amounts, a toast that changes
+   its mind in place. Only does anything while the Black look is on. ---------- */
+var Wave = (function () {
+  /* the shimmer from the Distortion Waves study: for most of a second the thing being changed is pulled through slow
+     fractal waves, each colour channel by a slightly different amount so its edges split into thin-film colour, while a
+     soft band of that colour crosses it; then it settles exactly where it was. Done is the same breath in green. */
+  let svg = null, run = null;
+  const nx = () => document.body.classList.contains('nx');
+  function defs() {
+    if (svg) return;
+    svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+    svg.setAttribute('aria-hidden', 'true'); svg.setAttribute('width', '0'); svg.setAttribute('height', '0'); svg.style.cssText = 'position:absolute;width:0;height:0;overflow:hidden;pointer-events:none';
+    const ch = (c, m) => '<feDisplacementMap id="wv' + c + '" in="SourceGraphic" in2="n" scale="0" xChannelSelector="R" yChannelSelector="G" result="d' + c + '"/><feColorMatrix in="d' + c + '" type="matrix" values="' + m + ' 0 0 0 1 0" result="' + c + '"/>';
+    svg.innerHTML = '<filter id="wvf" x="-4%" y="-4%" width="108%" height="108%" color-interpolation-filters="sRGB"><feTurbulence id="wvn" type="fractalNoise" baseFrequency="0.0045 0.014" numOctaves="2" seed="11" result="n"/>' +
+      ch('r', '1 0 0 0 0 0 0 0 0 0 0 0 0 0 0') + ch('g', '0 0 0 0 0 0 1 0 0 0 0 0 0 0 0') + ch('b', '0 0 0 0 0 0 0 0 0 0 0 0 1 0 0') +
+      '<feBlend in="r" in2="g" mode="screen" result="rg"/><feBlend in="rg" in2="b" mode="screen"/></filter>';
+    document.body.append(svg);
+  }
+  function stop() { if (run) { const r = run; run = null; cancelAnimationFrame(r.raf); r.done(); } }
+  /* mode: 'enter' (it arrives out of the shimmer), 'morph' (it changes), 'ok' (it is done) */
+  function play(host, mode, o) {
+    o = o || {}; if (!host || !nx() || REDUCED || document.hidden) return;
+    defs(); stop();
+    const parts = o.parts ? Array.from(o.parts).filter(Boolean) : [host], amp = o.amp != null ? o.amp : mode === 'enter' ? 44 : mode === 'ok' ? 16 : 30, dur = o.dur || (mode === 'ok' ? 1150 : mode === 'enter' ? 880 : 720);
+    const n = svg.querySelector('#wvn'), d = ['r', 'g', 'b'].map(c => svg.querySelector('#wv' + c));
+    const sh = document.createElement('i'); sh.className = 'wv-sheen' + (mode === 'ok' ? ' ok' : ''); sh.setAttribute('aria-hidden', 'true'); host.append(sh);
+    const keep = parts.map(p => p.style.filter), iso = host.style.isolation; host.style.isolation = 'isolate'; parts.forEach(p => { p.style.filter = 'url(#wvf)'; });
+    let anim = null;
+    if (mode === 'enter') anim = host.animate([{ opacity: 0, transform: 'scale(.955)' }, { opacity: 1, transform: 'none', offset: 0.45 }, { opacity: 1, transform: 'none' }], { duration: dur * 0.9, easing: 'cubic-bezier(.34,1.36,.5,1)' });
+    const t0 = performance.now(), seed = Math.random() * 100;
+    const r = { raf: 0, done: () => { parts.forEach((p, i) => { p.style.filter = keep[i]; }); host.style.isolation = iso; sh.remove(); if (anim) anim.finish(); } };
+    const frame = (now, once) => {
+      const t = Math.max(0, Math.min(1, (now - t0) / dur)), e = Math.pow(1 - t, 2.3), s = amp * e;
+      d[0].setAttribute('scale', s.toFixed(2)); d[1].setAttribute('scale', (s * 1.28).toFixed(2)); d[2].setAttribute('scale', (s * 1.56).toFixed(2));
+      const f = 'url(#wvf) hue-rotate(' + (t * 0.01).toFixed(5) + 'deg)'; parts.forEach(p => { p.style.filter = f; });
+      n.setAttribute('baseFrequency', (0.0045 + 0.0025 * Math.sin(seed + t * 2.2)).toFixed(5) + ' ' + (0.014 + 0.006 * t).toFixed(5));
+      const env = Math.sin(Math.PI * Math.min(1, t * 1.08)); sh.style.opacity = (env * (mode === 'ok' ? 1 : 0.9)).toFixed(3);
+      const k = 1 - Math.pow(1 - t, 3);
+      sh.style.setProperty('--sx', (-75 + 150 * k).toFixed(1) + '%'); sh.style.setProperty('--sy', (-70 + 140 * k).toFixed(1) + '%');
+      sh.style.setProperty('--bx', (25 + 50 * k).toFixed(1) + '%'); sh.style.setProperty('--by', (60 - 30 * k).toFixed(1) + '%');
+      if (once) return; if (t < 1) r.raf = requestAnimationFrame(frame); else stop();
+    };
+    run = r;
+    if (o.hold != null) { if (anim) anim.pause(); frame(t0 + o.hold * dur, true); return; }    // one moment of it, held, for looking at
+    r.raf = requestAnimationFrame(frame);
+  }
+  return { enter: (el, o) => play(el, 'enter', o), morph: (el, o) => play(el, 'morph', o), ok: (el, o) => play(el, 'ok', o), stop, freeze: () => { if (run) cancelAnimationFrame(run.raf); } };
+})();
+
+var Nx = (function () {
+  const B = document.body, on = () => B.classList.contains('nx');
+  /* ----- a ring: a share drawn as an arc on a dark track, a glyph in the middle ----- */
+  const C = 2 * Math.PI * 15;
+  function ring(p, col, size, glyph, from) {
+    const w = h('span', { class: 'ring' });
+    w.innerHTML = '<svg viewBox="0 0 40 40" width="' + size + '" height="' + size + '" aria-hidden="true"><circle cx="20" cy="20" r="15" fill="none" stroke="#3a3a3c" stroke-width="3.4"/><circle class="arc" cx="20" cy="20" r="15" fill="none" stroke-width="3.4" stroke-linecap="round" transform="rotate(-90 20 20)"/></svg>';
+    const arc = w.querySelector('.arc'); arc.setAttribute('stroke', col);
+    const dash = q => { const v = Math.max(0, Math.min(1, q)); return (v * C).toFixed(2) + ' ' + C.toFixed(2); };
+    arc.style.strokeDasharray = dash(from == null ? 0 : from);
+    if (glyph != null) w.append(h('b', { text: glyph }));
+    requestAnimationFrame(() => requestAnimationFrame(() => { arc.style.strokeDasharray = dash(p); }));
+    return w;
+  }
+  const pct = v => (v >= 0.995 ? 100 : v > 0 && v < 0.01 ? '<1' : Math.round(v * 100)) + '%';
+  const glyphOf = label => { const s = String(label); if (/^\d{4}$/.test(s)) return '’' + s.slice(2); const m = s.match(/[A-Za-z0-9À-ɏ]/); return m ? m[0].toUpperCase() : s.slice(0, 1); };
+
+  /* ----- tooltips: one black pointer that slides from one button to the next ----- */
+  const tip = $('#ntip'), tipB = tip.firstChild; let tipT = 0, tipEl = null, tipGone = 0;
+  const tipText = el => el.dataset.ttl || (el.querySelector(':scope > span') && el.querySelector(':scope > span').textContent) || el.getAttribute('aria-label') || '';
+  function showTip(el) {
+    const txt = tipText(el); if (!txt || !on()) return;
+    const r = el.getBoundingClientRect(); if (!r.width) return;
+    const was = tip.classList.contains('on'); tipB.textContent = txt;
+    const w = tipB.offsetWidth, hh = tipB.offsetHeight, below = r.top + r.height / 2 < innerHeight * 0.6;
+    const x = Math.max(8, Math.min(innerWidth - w - 8, r.left + r.width / 2 - w / 2)), y = below ? r.bottom + 10 : r.top - hh - 10;
+    tip.classList.toggle('below', below); tip.classList.toggle('above', !below);
+    if (!was) tip.classList.add('still');
+    tip.style.setProperty('--tx', x + 'px'); tip.style.setProperty('--ty', y + 'px'); tip.style.setProperty('--ax', (r.left + r.width / 2 - x) + 'px');
+    if (!was) { void tip.offsetWidth; tip.classList.remove('still'); }
+    tip.classList.add('on'); tipEl = el;
+  }
+  function hideTip() { clearTimeout(tipT); if (tip.classList.contains('on')) tipGone = performance.now(); tip.classList.remove('on'); tipEl = null; }
+  document.addEventListener('pointerover', e => {
+    const el = e.target.closest && e.target.closest('[data-tip]'); if (!el || el === tipEl || !on()) return;
+    clearTimeout(tipT); const warm = tip.classList.contains('on') || performance.now() - tipGone < 400;
+    tipT = setTimeout(() => showTip(el), warm ? 0 : 420);
+  });
+  document.addEventListener('pointerout', e => { const el = e.target.closest && e.target.closest('[data-tip]'); if (!el) return; if (e.relatedTarget && el.contains(e.relatedTarget)) return; clearTimeout(tipT); tipT = setTimeout(hideTip, 90); });
+  document.addEventListener('pointerdown', hideTip, true);
+  const TIPS = '.bar .pill, #zoomCtl button, #sideBtn, #sideTab, #propsTab, #propsClose, .brandbtn';
+  function wireTips(yes) {
+    $$(TIPS).forEach(el => {
+      if (yes) { if (el.title) { el.dataset.ttl = el.title.replace(/\s*\(([^)]*)\)\s*$/, '  $1'); el.dataset.oldTitle = el.title; el.removeAttribute('title'); } el.setAttribute('data-tip', ''); }
+      else { if (el.dataset.oldTitle) el.title = el.dataset.oldTitle; delete el.dataset.ttl; delete el.dataset.oldTitle; el.removeAttribute('data-tip'); }
+    });
+    if (!yes) hideTip();
+  }
+
+  /* ----- popovers: black, pointing at what they describe; they slide and change in place as the pointer moves on ----- */
+  const pop = $('#npop'), box = pop.firstChild; let popAt = null, popT = 0;
+  function showPop(anchor, build, side) {
+    if (!on()) return; clearTimeout(popT); hideTip();
+    const was = pop.classList.contains('on'); if (was && popAt === anchor) return;
+    box.textContent = ''; build(box); side = side || 'right';
+    const r = anchor.getBoundingClientRect(), w = box.offsetWidth, hh = box.offsetHeight;
+    let x = side === 'right' ? r.right + 14 : r.left - w - 14; x = Math.max(8, Math.min(innerWidth - w - 8, x));
+    const y = Math.max(8, Math.min(innerHeight - hh - 8, r.top + r.height / 2 - hh / 2));
+    pop.classList.toggle('right', side === 'right'); pop.classList.toggle('left', side !== 'right');
+    if (!was) pop.classList.add('still');
+    pop.style.setProperty('--tx', x + 'px'); pop.style.setProperty('--ty', y + 'px'); pop.style.setProperty('--ay', Math.max(18, Math.min(hh - 18, r.top + r.height / 2 - y)) + 'px');
+    if (!was) { void pop.offsetWidth; pop.classList.remove('still'); }
+    else if (box.animate && !REDUCED) box.animate([{ filter: 'blur(6px)', opacity: 0.2 }, { filter: 'blur(0)', opacity: 1 }], { duration: 280, easing: 'ease-out' });
+    pop.classList.add('on'); popAt = anchor;
+  }
+  function hidePop(delay) { clearTimeout(popT); popT = setTimeout(() => { pop.classList.remove('on'); popAt = null; }, delay == null ? 160 : delay); }
+  pop.addEventListener('pointerenter', () => clearTimeout(popT)); pop.addEventListener('pointerleave', () => hidePop());
+  const hover = (el, build, side) => { el._pop = [build, side]; el.addEventListener('pointerenter', () => showPop(el, build, side)); el.addEventListener('pointerleave', () => hidePop()); el.addEventListener('focus', () => showPop(el, build, side)); el.addEventListener('blur', () => hidePop(0)); };
+
+  /* ----- the spaces, as a notch of rings on the sheet's left edge ----- */
+  const seen = new Map();
+  function spaces(el, o) {
+    const { ids, nn, nr, fd, gc, hiK, two } = o; let total = 0, tn = 0, tr = 0;
+    ids.forEach(i => { total += nn[i] + nr[i]; tn += nn[i]; tr += nr[i]; }); if (!total) return;
+    const fr = $('#frame').getBoundingClientRect(), room = (fr.height || 500) - 70, cap = Math.max(2, Math.min(8, Math.floor(room / 64)));
+    const shown = ids.length > cap ? ids.slice(0, cap - 1) : ids.slice(), rest = ids.length > cap ? ids.slice(cap - 1) : [];
+    const name = v => v.label === UNSORTED ? 'Being organised' : v.label, letters = new Map();
+    shown.forEach(i => { const g = glyphOf(name(fd.vals[i])); letters.set(g, (letters.get(g) || 0) + 1); });
+    const glyph = v => { const g = glyphOf(name(v)); if (letters.get(g) > 1 && !/^’/.test(g)) { const s = name(v).replace(/[^A-Za-z0-9]/g, ''); return s.slice(0, 2).replace(/^./, c => c.toUpperCase()); } return g; };
+    const row = (label, n, of, col, unit) => [h('div', { class: 'mr' }, label, h('span', { text: fmtN(n) })), (() => { const b = h('div', { class: 'mb' }, h('i')); b.style.setProperty('--w', (of ? Math.max(1.5, n / of * 100) : 0) + '%'); b.style.setProperty('--c', col); return b; })(), h('div', { class: 'mu', text: pct(of ? n / of : 0) + ' of ' + unit })];
+    for (const i of shown) {
+      const v = fd.vals[i], col = cssCol(gc[i]), p = (nn[i] + nr[i]) / total, key = fd.F.id + ':' + v.label;
+      const b = h('button', { type: 'button', class: 'rg' + (hiK.size && !hiK.has(v.label) ? ' off' : ''), 'aria-label': name(v) + ', ' + pct(p), onclick: ev => { if (ev.detail >= 2) diveInto({ f: [cur.colorBy], k: [v.label] }); else toggleHi({ f: [cur.colorBy], k: [v.label] }, gc[i]); } },
+        ring(p, col, 38, glyph(v), seen.get(key)), h('span', { text: pct(p) }));
+      seen.set(key, p);
+      hover(b, bx => { const t = h('h4', null, h('i'), name(v)); t.style.setProperty('--c', col); bx.append(t);
+        if (two) bx.append(...row('Notes', nn[i], tn, col, 'your notes'), ...row('Record', nr[i], tr, col, 'the record'));
+        else bx.append(...row(fd.F.id === 'entry' ? 'Entries' : 'Entries here', nn[i] + nr[i], total, col, 'what is shown'));
+        bx.append(h('p', { class: 'hint', text: 'Click to light it. Click twice to go inside.' })); }, 'right');
+      el.append(b);
+    }
+    if (rest.length) {
+      let a = 0; rest.forEach(i => { a += nn[i] + nr[i]; }); const p = a / total;
+      const b = h('button', { type: 'button', class: 'rg', 'aria-label': rest.length + ' more' }, ring(p, '#8e8e93', 38, '+' + rest.length, seen.get('rest')), h('span', { text: pct(p) }));
+      seen.set('rest', p);
+      const build = bx => { bx.append(h('h4', { text: rest.length + ' more' })); const l = h('div', { class: 'list' }); rest.forEach(i => { const v = fd.vals[i], it = h('button', { type: 'button', onclick: () => toggleHi({ f: [cur.colorBy], k: [v.label] }, gc[i]) }, h('i'), h('span', { text: name(v) }), h('em', { text: fmtN(nn[i] + nr[i]) })); it.style.setProperty('--c', cssCol(gc[i])); l.append(it); }); bx.append(l); };
+      hover(b, build, 'right'); b.addEventListener('click', () => showPop(b, build, 'right'));
+      el.append(b);
+    }
+    repoint(el);
+  }
+
+  function repoint(host) { if (!popAt || popAt.isConnected) return; const hv = host.querySelector('.rg:hover'); if (hv && hv._pop) { popAt = null; showPop(hv, hv._pop[0], hv._pop[1]); } else hidePop(0); }
+
+  /* ----- the panels: put away and brought back by their tabs, and the sheet refitted once they have moved ----- */
+  const wide = () => innerWidth > 1180;
+  const propsShown = () => B.classList.contains('reading') || (wide() ? !B.classList.contains('props-off') : B.classList.contains('props-open'));
+  let slideT = 0;
+  function settle() { clearTimeout(slideT); slideT = setTimeout(() => { try { sizeCanvas(); refit(false); drawTimeline(); renderSpaces(); } catch (e) { /* nothing drawn yet */ } }, 470); }
+  function syncToggle() { const t = $('#propsToggle'); if (t) t.setAttribute('aria-pressed', String(on() && propsShown())); }
+  function setProps(show) {
+    if (wide()) { B.classList.toggle('props-off', !show); try { localStorage.setItem('wit.props', show ? 'on' : 'off'); } catch (e) { /* kept for this visit only */ } }
+    else B.classList.toggle('props-open', show);
+    syncToggle(); settle(); if (show) Wave.morph($('#props'), { parts: [$('.phead'), $('#propsBody'), $('#entryBody')], amp: 22 });
+  }
+  try { if (localStorage.getItem('wit.props') === 'off') B.classList.add('props-off'); } catch (e) { /* default: shown */ }
+  $('#propsTab').addEventListener('click', () => setProps(true));
+  $('#sideTab').addEventListener('click', () => { if (innerWidth > 820) sideSet(false); else B.classList.add('nav-open'); });
+
+  /* ----- the toast ----- */
+  const ICON = { done: '<svg viewBox="0 0 16 16"><path d="M3.8 8.4l2.7 2.7 5.7-6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>', busy: '<svg viewBox="0 0 16 16"><path d="M8 2.2A5.8 5.8 0 1 1 2.2 8" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>', info: '<svg viewBox="0 0 24 24"><use href="#mark"/></svg>' };
+  let tT = 0, wT = 0;
+  function toastNx(msg, kind) {
+    const el = $('#toast'); kind = kind || (/^(Saved|Copied|Filed|Added|Kept|Removed|Your notes are removed)/.test(msg) ? 'done' : /(…|\.\.\.)$/.test(msg) ? 'busy' : 'info');
+    const showing = el.classList.contains('on') && el.querySelector('.tt');
+    const fill = () => { el.textContent = ''; el.className = (el.classList.contains('on') ? 'on ' : '') + kind; const ti = h('span', { class: 'ti' }); ti.innerHTML = ICON[kind] || ICON.info; el.append(ti, h('span', { class: 'tt', text: msg })); el.title = msg; };
+    clearTimeout(tT); clearTimeout(wT);
+    if (showing && !REDUCED) {
+      const w0 = el.offsetWidth; el.style.width = w0 + 'px'; el.classList.add('swap');
+      wT = setTimeout(() => { fill(); el.classList.add('swap'); el.style.width = 'auto'; const w1 = Math.min(el.offsetWidth, innerWidth * 0.9); el.style.width = w0 + 'px'; void el.offsetWidth; el.style.width = w1 + 'px'; requestAnimationFrame(() => el.classList.remove('swap')); Wave.morph(el, { parts: [el.querySelector('.ti'), el.querySelector('.tt')], amp: 12, dur: 600 }); wT = setTimeout(() => { el.style.width = ''; }, 500); }, 170);
+    } else { el.style.width = ''; fill(); el.classList.add('on'); Wave.morph(el, { parts: [el.querySelector('.ti'), el.querySelector('.tt')], amp: 18, dur: 820 }); }
+    tT = setTimeout(() => el.classList.remove('on'), kind === 'busy' ? 12000 : 4200);
+  }
+
+  /* ----- dialogs come in out of the shimmer ----- */
+  const mo = new MutationObserver(ms => { ms.forEach(m => { const o = m.target; if (!o.hidden && on()) { const d = o.querySelector('.dlg'); if (d) Wave.enter(d, { parts: d.children, amp: 40 }); } }); });
+  $$('.overlay').forEach(o => mo.observe(o, { attributes: true, attributeFilter: ['hidden'] }));
+
+  const sp0 = setPage; setPage = function (id) { const prev = st.page, r = sp0.apply(this, arguments); if (on() && id !== prev && id !== 'brain') Wave.enter($('#page'), { amp: 18, dur: 720 }); return r; };
+
+  /* ----- switching the look on or off ----- */
+  function look(yes) {
+    wireTips(yes); syncToggle();
+    if (!yes) { hidePop(0); const m = $('#recordMenu'); if (m && m.parentNode === document.body) $('#recordBtn').after(m); }
+    settle();
+    try { if (S.rec) { renderSpaces(); renderStatus(); if (typeof drawStars === 'function') drawStars(); } } catch (e) { /* not drawn yet */ }
+  }
+  return { on, ring, pct, spaces, showPop, hidePop, hover, propsShown, setProps, settle, syncToggle, toast: toastNx, look };
+})();
+
 /* ---------- the window: full screen or set in the page ---------- */
 /* in the desktop app on macOS the window itself is see-through and the system blurs the desktop behind it, so the page draws no backdrop of its own */
 const VIB = /[?&]vibrancy/.test(location.search); if (VIB) { document.documentElement.style.background = 'transparent'; document.body.classList.add('vib'); document.body.dataset.glass = (location.search.match(/[?&]glass=(clear|frosted|solid)/) || [])[1] || 'clear'; document.body.prepend(h('div', { id: 'dragbar', 'aria-hidden': 'true' })); }
@@ -5207,7 +5728,7 @@ function randomView() {
   document.addEventListener('click', e => {
     const t = e.target.closest ? e.target.closest('[data-enter]') : null; if (t) { e.preventDefault(); enterApp(); openBrain(); }
     if (!$('#recordMenu').hidden && !e.target.closest('#recordMenu') && !e.target.closest('#recordBtn')) toggleRecordMenu(false);
-    if (document.body.classList.contains('nav-open') && !e.target.closest('#nav') && !e.target.closest('#navToggle')) document.body.classList.remove('nav-open');
+    if (document.body.classList.contains('nav-open') && !e.target.closest('#nav') && !e.target.closest('#navToggle') && !e.target.closest('#sideTab')) document.body.classList.remove('nav-open');
   });
   $('#startBtn').addEventListener('click', () => openBrain());
   $('#recordBtn').addEventListener('click', () => toggleRecordMenu());
@@ -5216,8 +5737,8 @@ function randomView() {
   $('#lookDlg').addEventListener('mousedown', e => { if (e.target.id === 'lookDlg') e.target.hidden = true; });
   $('#lockBtn').addEventListener('click', () => { setPage('brain'); closeBrain(); });
   $('#navToggle').addEventListener('click', () => document.body.classList.toggle('nav-open'));
-  $('#propsToggle').addEventListener('click', () => document.body.classList.toggle('props-open'));
-  $('#propsClose').addEventListener('click', () => { if (document.body.classList.contains('reading')) select(-1); else document.body.classList.remove('props-open'); });
+  $('#propsToggle').addEventListener('click', () => { if (Nx.on()) Nx.setProps(!Nx.propsShown()); else document.body.classList.toggle('props-open'); });
+  $('#propsClose').addEventListener('click', () => { if (document.body.classList.contains('reading')) select(-1); else if (Nx.on()) Nx.setProps(false); else document.body.classList.remove('props-open'); });
   $('#resetBtn').addEventListener('click', () => { Object.assign(st, { turning: !REDUCED, speed: 1, limit: false, track: true, glare: 0.7, chars: true, links: 0.5, scaffold: 1, pointSize: 1, labels: 'auto' }); select(-1); clearFilters(); propSig = ''; show(Object.assign({}, DEF, { palette: cur.palette }), { fx: true }); refit(true); });
   $('#randomBtn').addEventListener('click', () => { if (!st.open) openBrain(true); setPage('brain'); select(-1); show(randomView(), { fx: true }); });
   $('#saveBtn').addEventListener('click', saveImage);
@@ -5247,7 +5768,9 @@ function randomView() {
 })();
 
 async function boot() {
-  setTheme('original', true); sizeCanvas();
+  /* the theme you chose last time; the first time, Midnight in the Black look (so the black around the sheet reads as a shape), Original otherwise */
+  let th0 = null; try { th0 = localStorage.getItem('wit.theme'); } catch (e) { /* none kept */ } if (!THEMES.some(t => t.id === th0)) th0 = curLook() === 'black' ? 'midnight' : 'original';
+  setTheme(th0, true); sizeCanvas();
   $('#faqAnat').textContent = 'Is the anatomy real? Yes. The figure is sampled from Z-Anatomy, an open atlas built on BodyParts3D: ' + fmtN(Anatomy.structures) + ' named structures of a man 1.71 m tall, from the gyri of each lobe to the muscles of the calf. Notes are drawn on the brain, and the record of your chats on the nerves and muscles of the body. One liberty is taken: the shoulders and chest are drawn up to 12% broader than the atlas has them. Where an entry lands is decided by its date or its folder, not by what it says.';
   let rec = null;
   try { rec = await Promise.race([Vault.load(), new Promise(r => setTimeout(() => r(null), 350))]); } catch (e) { rec = null; }
@@ -5266,6 +5789,7 @@ async function boot() {
   deskBoot();
 }
 boot();
+if (/[?&]debug/.test(location.search)) window.__nx = { Nx, Wave, toast, openLook, openAdd, toggleRecordMenu, sideSet, applyLook };
 if (/[?&]debug/.test(location.search)) window.__mf = { Hud, Stars, Anatomy, Store, Layouts, st, S, U, R, show, play, stopPlay, select, refilter, setRange, toggleHi, clearFilters, enterApp, leaveApp, openBrain, closeBrain, setPage, setTheme, setRecord, pick, anchorPos, project, cam, goal, Agents, randomView, get cur() { return cur; }, get lay() { return lay; }, get litE() { return litE; } };
 
 }); });
@@ -5280,7 +5804,7 @@ if (/[?&]debug/.test(location.search)) window.__mf = { Hud, Stars, Anatomy, Stor
     var pills = document.querySelector('#mid .bar .pills');
     if (!pills || document.getElementById('installBtn')) return;
     var b = document.createElement('button');
-    b.className = 'pill'; b.type = 'button'; b.id = 'installBtn'; b.title = 'Install Wit as an app on this device. Your notes stay on it.';
+    b.className = 'pill solid'; b.type = 'button'; b.id = 'installBtn'; b.title = 'Install Wit as an app on this device. Your notes stay on it.';
     b.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 4v10"/><path d="m7.5 10 4.5 4.5 4.5-4.5"/><path d="M5 15v3a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-3"/></svg><span>Install</span>';
     b.addEventListener('click', function () { if (!offer) return; offer.prompt(); offer.userChoice.then(function () { offer = null; b.remove(); }); });
     pills.prepend(b);
