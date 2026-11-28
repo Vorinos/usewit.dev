@@ -75,9 +75,9 @@ a:focus-visible{outline:2px solid #fff;outline-offset:3px}
 <main>
 <h1 class="rise">A second brain for your notes and AI chats</h1>
 <div class="btns rise d1" style="gap:14px">
-<span class="glow" data-glow="pill" data-strength="1" data-offset="0"><canvas class="lo" aria-hidden="true"></canvas><canvas class="lo" aria-hidden="true"></canvas><a class="btn primary" href="https://github.com/Vorinos/Wit/releases">
+<span class="glow" data-glow="pill" data-strength="1" data-offset="0"><canvas class="lo" aria-hidden="true"></canvas><canvas class="lo" aria-hidden="true"></canvas><a class="btn primary" id="dl" href="https://github.com/Vorinos/Wit/releases/latest/download/Wit-arm64.dmg" data-os="mac">
 <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 4v11"/><path d="m6.5 10 5.5 5.5 5.5-5.5"/><path d="M5 20h14"/></svg>
-Download for Mac
+<span id="dlLabel">Download for Mac</span>
 </a><canvas class="hi" aria-hidden="true"></canvas><canvas class="hi" aria-hidden="true"></canvas></span>
 <span class="glow" data-glow="pill" data-strength="0.62" data-offset="0.37"><canvas class="lo" aria-hidden="true"></canvas><canvas class="lo" aria-hidden="true"></canvas><a class="btn" href="https://github.com/Vorinos/Wit">
 <svg width="14" height="14" viewBox="0 0 24 24" fill="#F5B83D" aria-hidden="true"><path d="M12 2.5l2.9 6.1 6.6.8-4.9 4.6 1.3 6.6L12 17.3l-5.9 3.3 1.3-6.6-4.9-4.6 6.6-.8z"/></svg>
@@ -88,7 +88,7 @@ Open in browser
 <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 17 17 7"/><path d="M8 7h9v9"/></svg>
 </a><canvas class="hi" aria-hidden="true"></canvas><canvas class="hi" aria-hidden="true"></canvas></span>
 </div>
-<p class="note rise d2">Best on the desktop app. The browser version works too, without connected apps.</p>
+<p class="note rise d2" id="note" aria-live="polite">Rather not download anything? Open it in your browser. Your notes stay on your device, and it installs as an app from the address bar.</p>
 <ul class="apps rise d3" aria-label="Works with">
 <li title="Claude Desktop and Claude Code"><img src="/assets/glyph-claude.png" alt="Claude" width="18" height="18"></li>
 <li title="Codex"><img src="/assets/glyph-codex.png" alt="Codex" width="18" height="18"></li>
@@ -100,15 +100,39 @@ Open in browser
 <div class="foot">
 <p class="cap">Available for</p>
 <nav class="plats" aria-label="Downloads">
-<a href="https://github.com/Vorinos/Wit/releases"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 4v11"/><path d="m6.5 10 5.5 5.5 5.5-5.5"/><path d="M5 20h14"/></svg>Apple Silicon</a>
-<a href="https://github.com/Vorinos/Wit/releases"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 4v11"/><path d="m6.5 10 5.5 5.5 5.5-5.5"/><path d="M5 20h14"/></svg>Intel</a>
-<a href="https://github.com/Vorinos/Wit/releases"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 4v11"/><path d="m6.5 10 5.5 5.5 5.5-5.5"/><path d="M5 20h14"/></svg>Windows</a>
-<a href="https://github.com/Vorinos/Wit/releases"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 4v11"/><path d="m6.5 10 5.5 5.5 5.5-5.5"/><path d="M5 20h14"/></svg>Linux</a>
+<a href="https://github.com/Vorinos/Wit/releases/latest/download/Wit-arm64.dmg" data-os="mac"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 4v11"/><path d="m6.5 10 5.5 5.5 5.5-5.5"/><path d="M5 20h14"/></svg>Apple Silicon</a>
+<a href="https://github.com/Vorinos/Wit/releases/latest/download/Wit-x64.dmg" data-os="mac"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 4v11"/><path d="m6.5 10 5.5 5.5 5.5-5.5"/><path d="M5 20h14"/></svg>Intel</a>
+<a href="https://github.com/Vorinos/Wit/releases/latest/download/Wit-Setup.exe" data-os="win"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 4v11"/><path d="m6.5 10 5.5 5.5 5.5-5.5"/><path d="M5 20h14"/></svg>Windows</a>
+<a href="https://github.com/Vorinos/Wit/releases/latest/download/Wit.AppImage" data-os="linux"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 4v11"/><path d="m6.5 10 5.5 5.5 5.5-5.5"/><path d="M5 20h14"/></svg>Linux</a>
 <a href="/app/"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M3 12h18"/><path d="M12 3a14 14 0 0 1 0 18a14 14 0 0 1 0-18z"/></svg>Web</a>
 </nav>
 </div>
 </div>
 
+<script>
+/* The Download button offers the file for the visitor's own computer, and after a click says what to expect the first
+   time it opens. The files keep the same names in every release, so these links always fetch the newest. */
+(function () {
+  var REL = 'https://github.com/Vorinos/Wit/releases/latest/download/';
+  var ua = navigator.userAgent, plat = (navigator.userAgentData && navigator.userAgentData.platform) || navigator.platform || '';
+  var dl = document.getElementById('dl'), label = document.getElementById('dlLabel'), note = document.getElementById('note');
+  var phone = /iPhone|iPad|iPod|Android/i.test(ua) || (/Mac/.test(plat) && navigator.maxTouchPoints > 1);
+  if (!phone && /Win/i.test(plat)) { dl.href = REL + 'Wit-Setup.exe'; dl.dataset.os = 'win'; label.textContent = 'Download for Windows'; }
+  else if (!phone && /Linux|X11/i.test(plat + ua) && !/Android|CrOS/i.test(ua)) { dl.href = REL + 'Wit.AppImage'; dl.dataset.os = 'linux'; label.textContent = 'Download for Linux'; }
+  else if (navigator.userAgentData && navigator.userAgentData.getHighEntropyValues && /mac/i.test(plat)) {
+    navigator.userAgentData.getHighEntropyValues(['architecture']).then(function (v) { if (v.architecture === 'x86') dl.href = REL + 'Wit-x64.dmg'; }).catch(function () {});
+  }
+  var FIRST = {
+    mac: 'Downloading. The first time you open Wit, macOS will ask: go to System Settings \u203a Privacy & Security and click Open Anyway. Wit is not notarized by Apple yet.',
+    win: 'Downloading. If Windows SmartScreen appears when you run it, click More info, then Run anyway.',
+    linux: 'Downloading. Make the file executable (chmod +x Wit.AppImage), then run it.'
+  };
+  document.addEventListener('click', function (e) {
+    var a = e.target.closest && e.target.closest('a[data-os]');
+    if (a && FIRST[a.dataset.os]) note.textContent = FIRST[a.dataset.os];
+  });
+})();
+</script>
 <script src="/assets/bg-film.js"></script>
 
 <script>

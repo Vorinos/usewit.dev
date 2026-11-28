@@ -4,6 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Wit</title>
+<link rel="manifest" href="/app/manifest.webmanifest">
 <link rel="icon" href="/favicon.svg" type="image/svg+xml"><link rel="apple-touch-icon" href="/assets/apple-touch-icon.png"><meta name="theme-color" content="#000000"><script>if(location.hash==='#brain')try{history.replaceState(null,'',location.pathname+location.search)}catch(e){}</script>
 <meta name="description" content="Wit reads your notes and AI chats on your own computer, files them, links them, and draws the whole record as points you can turn, sort and question.">
 <style>
@@ -315,6 +316,25 @@ body[data-chrome="light"] select option{background:#f3f3f1;color:#111}
 .dlg{width:min(580px,100%);max-height:calc(100vh - 40px);overflow:auto;background:var(--win);border:1px solid var(--line2);border-radius:22px;padding:18px 22px 22px;animation:rise .22s cubic-bezier(.2,.8,.2,1)}
 @keyframes rise{from{opacity:0;transform:translateY(10px) scale(.985)}}
 .dlg-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:6px}
+/* ---------- first run: until there is a record of your own, this, not the invented sample ---------- */
+#welcome{position:fixed;inset:0;z-index:55;display:grid;place-items:center;overflow:auto;padding:48px 20px;background:color-mix(in srgb,var(--cv) 84%,transparent);-webkit-backdrop-filter:blur(18px) saturate(1.2);backdrop-filter:blur(18px) saturate(1.2);color:var(--ink);animation:rise .35s cubic-bezier(.2,.8,.2,1)}
+#welcome .in{width:min(780px,100%);display:grid;justify-items:center;text-align:center;gap:14px}
+#welcome .mk{width:44px;height:44px;color:var(--ink)}
+#welcome h1{font-size:30px;line-height:1.1;font-weight:600;letter-spacing:-.02em;text-wrap:balance}
+#welcome .lede{max-width:540px;color:var(--ink2);font-size:15px;text-wrap:balance}
+#welcome .ways{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;width:100%;margin-top:14px;border-radius:22px;transition:outline-color .15s}
+#welcome .way{display:grid;grid-template-rows:auto 1fr auto;gap:8px;text-align:left;padding:18px;border:1px solid var(--line2);border-radius:18px;background:var(--card)}
+#welcome .way b{font-size:15px;font-weight:600}
+#welcome .way p{color:var(--ink2);font-size:13px;line-height:1.45}
+#welcome .way a{color:var(--ink);text-underline-offset:3px}
+#welcome .way .pill{justify-self:start;margin-top:4px}
+#welcome .fine{color:var(--ink3);font-size:12.5px;max-width:560px;text-wrap:balance}
+#welcome.over .ways{outline:2px dashed var(--line2);outline-offset:8px}
+@media (max-width:720px){#welcome .ways{grid-template-columns:minmax(0,1fr)}#welcome h1{font-size:26px}}
+#sampleBar{position:absolute;top:62px;left:50%;transform:translateX(-50%);z-index:7;display:none;align-items:center;gap:10px;max-width:calc(100% - 24px);padding:5px 5px 5px 14px;border-radius:999px;background:var(--win);border:1px solid var(--line2);-webkit-backdrop-filter:blur(20px);backdrop-filter:blur(20px);font-size:12.5px;color:var(--ink2)}
+#sampleBar span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+body.sampling #sampleBar{display:flex}
+#sampleBar .pill{height:28px;font-size:12.5px;flex:none}
 .dlg-head h2{font-size:18px;font-weight:600}
 .dlg .sub{color:var(--ink2);margin-bottom:14px}
 #drop{border:1px dashed var(--line2);border-radius:16px;padding:24px 18px;text-align:center;display:grid;gap:8px;justify-items:center;transition:border-color .15s,background .15s}
@@ -960,6 +980,7 @@ body.vib.jv[data-glass="frosted"]:not([data-theme="original"]) #view::before{opa
       <div id="answer" hidden><p id="answerQ"></p><p id="answerA"></p></div>
       <div id="spaces"></div>
       <p id="zoomHint">Scroll zooms once Wit is full screen</p>
+      <div id="sampleBar" role="status"><span>Invented sample notes, so there is something to look at</span><button class="pill solid" type="button" id="sampleAdd">Bring in yours</button></div>
       <div id="nogl" hidden><b>This browser cannot draw the brain.</b><span>WebGL is off or missing. Everything else still works: you can add notes, search them and read them under Notes.</span></div>
       <div id="start">
         <svg class="mk"><use href="#mark"/></svg>
@@ -1018,6 +1039,20 @@ body.vib.jv[data-glass="frosted"]:not([data-theme="original"]) #view::before{opa
   </footer>
 </div>
 
+<section id="welcome" aria-labelledby="welTitle" hidden>
+  <div class="in">
+    <svg class="mk" aria-hidden="true"><use href="#mark"/></svg>
+    <h1 id="welTitle">Bring in your notes</h1>
+    <p class="lede">Wit reads them here, files them into folders, links what belongs together, and draws your whole record as a brain you can turn, sort and question. Nothing is uploaded.</p>
+    <div class="ways">
+      <div class="way"><b>A folder of notes</b><p>Markdown or text files, or a whole Obsidian vault.</p><button class="pill solid" type="button" id="welFolder">Choose a folder</button></div>
+      <div class="way"><b>Your AI chats</b><p>The .zip that ChatGPT or Claude emails you. <a href="https://chatgpt.com/#settings/DataControls" target="_blank" rel="noopener" data-export="chatgpt">ChatGPT</a>: Settings → Data controls → Export. <a href="https://claude.ai/settings/data-privacy-controls" target="_blank" rel="noopener" data-export="claude">Claude</a>: Settings → Privacy → Export data.</p><button class="pill" type="button" id="welFiles">Choose the export</button></div>
+      <div class="way"><b>Start from nothing</b><p>Write a first note. Wit dates it, names it and files it, and the record grows from there.</p><button class="pill" type="button" id="welWrite">Write a note</button></div>
+    </div>
+    <p class="fine" id="welFine">You can also drop files anywhere on this window.</p>
+    <button class="linkbtn" type="button" id="welSample">Look around with invented sample notes first</button>
+  </div>
+</section>
 <div id="addDlg" class="overlay" hidden>
   <div class="dlg" role="dialog" aria-modal="true" aria-labelledby="addTitle">
     <div class="dlg-head"><h2 id="addTitle">Add notes</h2><button class="pill icon" type="button" id="addClose" aria-label="Close"><svg><use href="#i-x"/></svg></button></div>
@@ -3263,7 +3298,7 @@ function renderStatus() {
   else if (st.range) el.append(h('b', { text: fmtN(n) + ' entries ' }), 'in the chosen dates ', clear);
   else if (f.set) el.append(h('b', { text: fmtN(n) + ' entries ' }), 'picked out ', clear);
   else if (st.sel >= 0 && S.adj[st.sel].length) el.append(h('span', { text: 'Lit: this entry and the ' + S.adj[st.sel].length + ' it is linked to.' }));
-  else el.append(h('span', { text: 'No agents running.' }), h('br'), h('span', { text: fmtN(S.n) + ' entries, ' + (S.rec.sample ? 'an invented sample' : S.rec.kept ? 'kept on this computer' : 'held in memory') + '.' }));
+  else el.append(h('span', { text: 'No agents running.' }), h('br'), h('span', { text: fmtN(S.n) + (S.n === 1 ? ' entry, ' : ' entries, ') + (S.rec.sample ? 'an invented sample' : S.rec.kept ? 'kept on this computer' : 'held in memory') + '.' }));
 }
 
 /* ---------- the reader ---------- */
@@ -3864,6 +3899,7 @@ function setRecord(rec, first) {
   propSig = ''; syncChrome(); drawStars(); if (st.page !== 'brain') setPage(st.page);
   scheduleMirror();
   if (!first && st.open) play(0, 3.4);
+  Welcome.sync();
 }
 
 /* ----- the Add notes dialog ----- */
@@ -3917,19 +3953,20 @@ async function commitPending() {
 async function addTypedNote() {
   const title = $('#noteTitle').value, text = $('#noteText').value;
   if (!text.trim() && !title.trim()) { toast('Write something first.'); $('#noteText').focus(); return; }
-  const res = await Agents.fileNote(title, text, S.rec.entries);
+  const fresh = !!S.rec.sample, base = fresh ? [] : S.rec.entries;
+  const res = await Agents.fileNote(title, text, base);
   if (!res.entries.length) { toast('That note is already in the record.'); return; }
-  const en = res.entries[0], rec = { name: S.rec.name, sample: S.rec.sample, kept: S.rec.kept, entries: S.rec.entries.concat(res.entries) };
-  if (!rec.sample && $('#keep').checked) rec.kept = await Vault.save(rec);
+  const en = res.entries[0], rec = { name: fresh ? 'Your record' : S.rec.name, sample: false, kept: fresh ? false : S.rec.kept, entries: base.concat(res.entries) };
+  if ($('#keep').checked) rec.kept = await Vault.save(rec);
   $('#noteTitle').value = ''; $('#noteText').value = ''; closeAdd();
   setRecord(rec, true); if (!st.open) openBrain(true);
   const idx = rec.entries.length - 1;
   setTimeout(() => { select(idx, true); }, 400);
-  toast('Filed under ' + en.f.replace(/\//g, ' / ') + (en.y && en.y.length ? ', because it shares ' + en.y.join(', ') : '') + (rec.sample ? '. This is the sample record, so the note lasts until Wit closes.' : '.'));
+  toast('Filed under ' + en.f.replace(/\//g, ' / ') + (en.y && en.y.length ? ', because it shares ' + en.y.join(', ') : '') + (fresh ? '. Your record has begun.' : '.'));
 }
 async function removeMine() {
   await Vault.clear(); if (Desk) Desk.record.clear().catch(() => { }); toggleRecordMenu(false);
-  cur = Object.assign({}, DEF, { palette: cur.palette }); setRecord(Sample.build(), false); toast('Your notes are removed from this computer. The sample record is back.');
+  cur = Object.assign({}, DEF, { palette: cur.palette }); setRecord(Sample.build(), false); Welcome.show(); toast('Your notes are removed from this computer.');
 }
 (function addWiring() {
   const dlg = $('#addDlg'), drop = $('#drop');
@@ -3947,6 +3984,32 @@ async function removeMine() {
   $('#noteAdd').addEventListener('click', addTypedNote);
   $('#runDone').addEventListener('click', commitPending);
   $('#runBack').addEventListener('click', openAdd);
+})();
+
+/* ---------- First run. Until there is a record of your own, Wit opens on the screen above rather than on the invented
+   sample (the owner's call, 2026-11-27: "it's like a demo with other thoughts and stuff, make it actually working").
+   The sample is still there behind it, for anyone who wants to look around first, and says what it is. ---------- */
+const Welcome = (function () {
+  const el = $('#welcome'), D = window.witDesktop || null; let skipped = false;
+  function sync() {
+    const sample = !!(S.rec && S.rec.sample), want = sample && !skipped && !!st.app;
+    if (el.hidden === want) { el.hidden = !want; if (want) setTimeout(() => { const b = $('#welFolder'); if (b && !el.hidden) b.focus(); }, 80); }
+    document.body.classList.toggle('sampling', sample && skipped && !!st.app);
+  }
+  $('#welFolder').addEventListener('click', () => { openAdd(); $('#inFolder').click(); });
+  $('#welFiles').addEventListener('click', () => { openAdd(); $('#inFiles').click(); });
+  $('#welWrite').addEventListener('click', () => { openAdd(); setTimeout(() => $('#noteText').focus(), 60); });
+  $('#welSample').addEventListener('click', () => { skipped = true; sync(); });
+  $('#sampleAdd').addEventListener('click', () => { skipped = false; sync(); });
+  /* in the desktop app, opening an export page also has Wit watch Downloads for the file, and offer to add it */
+  el.addEventListener('click', e => { const a = e.target.closest && e.target.closest('[data-export]'); if (a && D && D.exports && D.exports.open) { e.preventDefault(); D.exports.open(a.dataset.export).catch(() => { }); } });
+  ['dragenter', 'dragover'].forEach(ev => el.addEventListener(ev, e => { e.preventDefault(); el.classList.add('over'); }));
+  el.addEventListener('dragleave', e => { if (!e.relatedTarget || !el.contains(e.relatedTarget)) el.classList.remove('over'); });
+  el.addEventListener('drop', async e => { e.preventDefault(); el.classList.remove('over'); const files = await Agents.fromDrop(e.dataTransfer); if (files.length) { openAdd(); runImport(files); } });
+  $('#welFine').textContent = D
+    ? 'Your record is kept in Wit\u2019s own folder on this computer. You can also drop files anywhere on this window, and Connect apps files your Claude Code and Codex sessions as you work.'
+    : 'Your record is kept in this browser, on this device only. You can also drop files anywhere on this window.';
+  return { sync, show() { skipped = false; sync(); } };
 })();
 
 /* the logos of the apps Wit connects to, as supplied for this build */
@@ -5128,8 +5191,8 @@ const Backdrop = (function () {
 const VIB = /[?&]vibrancy/.test(location.search); if (VIB) { document.documentElement.style.background = 'transparent'; document.body.classList.add('vib'); document.body.dataset.glass = (location.search.match(/[?&]glass=(clear|frosted|solid)/) || [])[1] || 'clear'; document.body.prepend(h('div', { id: 'dragbar', 'aria-hidden': 'true' })); }
 applyLook(curLook()); applyIcons(curIcons()); sideInit(); exploreBoot();
 const DESKTOP = (location.protocol === 'file:' && !/[?&]site/.test(location.search)) || /^\/app(\/|\/index\.html)?$/.test(location.pathname);
-function enterApp() { st.app = true; document.body.classList.add('app'); window.scrollTo(0, 0); requestAnimationFrame(() => { sizeCanvas(); refit(false); drawTimeline(); }); if (!DESKTOP && location.hash !== '#brain') try { history.replaceState(null, '', '#brain'); } catch (e) { /* a sandboxed frame may refuse; the page works without the hash */ } }
-function leaveApp() { if (DESKTOP) return; st.app = false; document.body.classList.remove('app'); Backdrop.set(true); requestAnimationFrame(() => { sizeCanvas(); refit(false); drawTimeline(); }); if (location.hash === '#brain') try { history.replaceState(null, '', location.pathname + location.search); } catch (e) { /* as above */ } }
+function enterApp() { st.app = true; document.body.classList.add('app'); Welcome.sync(); window.scrollTo(0, 0); requestAnimationFrame(() => { sizeCanvas(); refit(false); drawTimeline(); }); if (!DESKTOP && location.hash !== '#brain') try { history.replaceState(null, '', '#brain'); } catch (e) { /* a sandboxed frame may refuse; the page works without the hash */ } }
+function leaveApp() { if (DESKTOP) return; st.app = false; document.body.classList.remove('app'); Welcome.sync(); Backdrop.set(true); requestAnimationFrame(() => { sizeCanvas(); refit(false); drawTimeline(); }); if (location.hash === '#brain') try { history.replaceState(null, '', location.pathname + location.search); } catch (e) { /* as above */ } }
 function openBrain(quiet) { if (st.open) return; st.open = true; document.body.classList.add('open'); lastTouch = perf(); if (!quiet) play(0.02, 2.4); }
 function closeBrain() { st.open = false; document.body.classList.remove('open'); select(-1); stopPlay(false); setTip(null); }
 function randomView() {
@@ -5206,6 +5269,24 @@ boot();
 if (/[?&]debug/.test(location.search)) window.__mf = { Hud, Stars, Anatomy, Store, Layouts, st, S, U, R, show, play, stopPlay, select, refilter, setRange, toggleHi, clearFilters, enterApp, leaveApp, openBrain, closeBrain, setPage, setTheme, setRecord, pick, anchorPos, project, cam, goal, Agents, randomView, get cur() { return cur; }, get lay() { return lay; }, get litE() { return litE; } };
 
 }); });
+</script>
+<script>
+/* usewit.dev only: work offline, and offer to install Wit as an app where the browser allows it */
+(function () {
+  if ('serviceWorker' in navigator) addEventListener('load', function () { navigator.serviceWorker.register('/app/sw.js').catch(function () {}); });
+  var offer = null;
+  addEventListener('beforeinstallprompt', function (e) {
+    e.preventDefault(); offer = e;
+    var pills = document.querySelector('#mid .bar .pills');
+    if (!pills || document.getElementById('installBtn')) return;
+    var b = document.createElement('button');
+    b.className = 'pill'; b.type = 'button'; b.id = 'installBtn'; b.title = 'Install Wit as an app on this device. Your notes stay on it.';
+    b.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 4v10"/><path d="m7.5 10 4.5 4.5 4.5-4.5"/><path d="M5 15v3a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-3"/></svg><span>Install</span>';
+    b.addEventListener('click', function () { if (!offer) return; offer.prompt(); offer.userChoice.then(function () { offer = null; b.remove(); }); });
+    pills.prepend(b);
+  });
+  addEventListener('appinstalled', function () { var b = document.getElementById('installBtn'); if (b) b.remove(); });
+})();
 </script>
 </body>
 </html>
