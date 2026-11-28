@@ -2,7 +2,7 @@
    The app page is fetched fresh whenever there is a connection (so an update shows at once) and kept for when there
    is none; the site's other files are served from the cache and refreshed behind. Requests to other sites, such as the
    AI you ask, are never touched, and your notes are not here: they live in the browser's own storage. */
-const CACHE = 'wit-app-v1';
+const CACHE = 'wit-app-v2';
 const PAGE = '/app/';
 
 self.addEventListener('install', e => {
